@@ -1,0 +1,8 @@
+{
+  "name": "@transligual/web",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": { "dev": "next dev", "build": "next build", "start": "next start", "lint": "tsc --noEmit", "test": "echo \"No web tests yet\"" },
+  "dependencies": { "next": "^15.1.0", "react": "^19.0.0", "react-dom": "^19.0.0" },
+  "devDependencies": { "@types/node": "^22.10.1", "@types/react": "^19.0.2", "typescript": "^5.7.2" }
+}
