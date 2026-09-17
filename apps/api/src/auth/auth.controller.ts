@@ -1,23 +1,25 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
-import { IsEmail, IsString, MinLength } from 'class-validator';
-
-class RegisterDto {
-  @IsEmail() email!: string;
-  @IsString() @MinLength(12) password!: string;
-  @IsString() firstName!: string;
-  @IsString() lastName!: string;
-}
+import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
+import { AuthService } from './auth.service';
+import { LoginDto, RegisterDto } from './dto/auth.dto';
+import { AuthenticatedRequest, JwtAuthGuard } from './jwt-auth.guard';
 
 @Controller('auth')
 export class AuthController {
+  constructor(private readonly auth: AuthService) {}
+
   @Post('register')
-  register(@Body() body: RegisterDto) {
-    // Developer 1: replace this contract stub with AuthService + Prisma transaction on Day 2.
-    return { success: true, data: { email: body.email, status: 'PENDING' } };
+  async register(@Body() body: RegisterDto) {
+    return { success: true, data: await this.auth.register(body) };
+  }
+
+  @Post('login')
+  async login(@Body() body: LoginDto) {
+    return { success: true, data: await this.auth.login(body) };
   }
 
   @Get('me')
-  me() {
-    return { success: false, error: { code: 'NOT_IMPLEMENTED', message: 'Authentication guard pending' } };
+  @UseGuards(JwtAuthGuard)
+  async me(@Req() request: AuthenticatedRequest) {
+    return { success: true, data: await this.auth.me(request.user.sub) };
   }
 }
