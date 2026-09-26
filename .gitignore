@@ -1,7 +1,10 @@
 node_modules
 .next
+.next-dev
 dist
 .env
 .env.local
+.env.production
 coverage
 *.log
+uploads/

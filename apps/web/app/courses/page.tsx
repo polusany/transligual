@@ -1,153 +1,29 @@
-import Link from 'next/link';
+import type { Metadata } from 'next';
+import CourseCatalog from './catalog';
+import { CourseSummary } from '../components/course-card';
+import { serverApiUrl } from '../lib/server-api';
 
-type Course = {
-  id: string;
-  title: string;
-  description: string | null;
-  language: string;
-  level: string;
-  thumbnail: string | null;
-};
+export const metadata: Metadata = { title: 'French course library' };
 
-async function getCourses(): Promise<Course[]> {
+async function getCourses(): Promise<{ courses: CourseSummary[]; error?: string }> {
   try {
-    const response = await fetch(
-      'http://localhost:4000/api/v1/courses',
-      {
-        cache: 'no-store',
-      }
-    );
-
-    if (!response.ok) {
-      throw new Error('Failed to fetch courses');
-    }
-
-    return response.json();
-  } catch (error) {
-    console.error(error);
-    return [];
+    const response = await fetch(serverApiUrl('/courses'), { cache: 'no-store' });
+    if (!response.ok) return { courses: [], error: 'The course service returned an error. Please try again shortly.' };
+    const payload = await response.json();
+    const data = (payload?.data ?? payload) as CourseSummary[];
+    return { courses: data.filter((course) => course.status === 'PUBLISHED') };
+  } catch {
+    return { courses: [], error: 'The course service is temporarily unavailable. Please try again shortly.' };
   }
 }
 
 export default async function CoursesPage() {
-  const courses = await getCourses();
-
+  const result = await getCourses();
   return (
-    <main className="dashboard-page">
-
-      {/* HEADER */}
-
-      <header className="dashboard-nav">
-
-        <div className="brand">
-          <span className="brand-main">
-            Trans
-          </span>
-
-          <span className="brand-accent">
-            lingual
-          </span>
-        </div>
-
-
-        <Link
-          href="/dashboard"
-          className="browse-button"
-        >
-          Dashboard
-        </Link>
-
-      </header>
-
-
-      {/* TITLE */}
-
-      <section className="welcome-section">
-
-        <p className="eyebrow">
-          COURSE LIBRARY
-        </p>
-
-        <h1>
-          Browse Courses
-        </h1>
-
-        <p>
-          Explore available language courses and
-          start your learning journey.
-        </p>
-
-      </section>
-
-
-      {/* COURSES */}
-
-      {courses.length === 0 ? (
-
-        <section className="courses-section">
-
-          <div className="empty-courses">
-
-            <div className="empty-icon">
-              📚
-            </div>
-
-            <h3>
-              No courses available yet
-            </h3>
-
-            <p>
-              New courses will appear here once
-              instructors publish them.
-            </p>
-
-          </div>
-
-        </section>
-
-      ) : (
-
-        <section className="stats-grid">
-
-          {courses.map((course) => (
-
-            <div
-              key={course.id}
-              className="stat-card"
-            >
-
-              <h2>
-                {course.title}
-              </h2>
-
-              <p>
-                {course.description}
-              </p>
-
-              <p>
-                Language: {course.language}
-              </p>
-
-              <p>
-                Level: {course.level}
-              </p>
-
-
-              <Link
-                href={`/courses/${course.id}`}
-                className="primary-button"
-              >
-                View Course
-              </Link>
-
-            </div>
-
-          ))}
-
-        </section>
-
-      )}
-
+    <main className="page-shell">
+      <header className="page-intro"><p className="eyebrow">The course library</p><h1>Find your way into French.</h1><p>Learn with a clear structure, practical lessons, and tutors who help you make every new word your own.</p></header>
+      <CourseCatalog courses={result.courses} error={result.error} />
+      <section className="cta-band"><div><h2>Not sure where to begin?</h2><p>Start with the level that feels right. You can build from there.</p></div><a className="button-outline" href="/about">Explore our approach <span aria-hidden="true">→</span></a></section>
     </main>
   );
 }

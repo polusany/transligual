@@ -24,6 +24,11 @@ enum UserStatus {
   DEACTIVATED
 }
 
+enum AccountTokenType {
+  EMAIL_VERIFICATION
+  PASSWORD_RESET
+}
+
 enum ProfessionalApprovalStatus {
   PENDING_APPROVAL
   APPROVED
@@ -233,6 +238,7 @@ model User {
   createdAt              DateTime                  @default(now())
   updatedAt              DateTime                  @updatedAt
   profile                Profile?
+  accountTokens          AccountToken[]
   tutorProfile           TutorProfile?
   translatorProfile      TranslatorProfile?
   interpreterProfile     InterpreterProfile?
@@ -256,6 +262,19 @@ model User {
   auditLogs              AuditLog[]                @relation("AuditActor")
 
   @@index([status])
+}
+
+model AccountToken {
+  id        String          @id @default(uuid())
+  userId    String
+  type      AccountTokenType
+  tokenHash String          @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime        @default(now())
+  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, type, expiresAt])
 }
 
 model Profile {

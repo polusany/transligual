@@ -8,6 +8,7 @@
     "lint": "pnpm -r lint",
     "test": "pnpm -r test",
     "db:generate": "pnpm --filter @transligual/api prisma:generate",
-    "db:migrate": "pnpm --filter @transligual/api prisma:migrate"
+    "db:migrate": "pnpm --filter @transligual/api prisma:migrate",
+    "db:seed": "pnpm --filter @transligual/api prisma:seed"
   }
 }
