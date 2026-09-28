@@ -48,10 +48,14 @@ export default function Login() {
         setNotice(result.message);
         setMode('login');
       } else {
-        await apiRequest('/auth/login', {
+        const result = await apiRequest<{ verificationRequired?: boolean; message?: string }>('/auth/login', {
           method: 'POST',
           body: JSON.stringify({ email, password }),
         });
+        if (result.verificationRequired) {
+          setNotice(result.message ?? 'Check your email to verify your account and sign in.');
+          return;
+        }
         const user = await apiRequest<CurrentUser>('/auth/me');
         const destination = user.roles.some((role) => ['ADMIN', 'SUPER_ADMIN'].includes(role))
           ? '/admin'
@@ -87,7 +91,7 @@ export default function Login() {
             {notice && <p className="form-success" role="status">{notice}</p>}
             <button className="button" type="submit" disabled={isSubmitting}>{isSubmitting ? 'Please wait…' : registering ? 'Create my account' : 'Sign in'} <span aria-hidden="true">→</span></button>
           </form>
-          {!registering && <p className="hint"><Link className="text-link" href="/reset-password">Forgot your password?</Link> · <Link className="text-link" href="/verify-email">Resend verification email</Link></p>}
+          {!registering && <p className="hint"><Link className="text-link" href="/reset-password">Forgot your password?</Link></p>}
           <p className="hint">{registering ? 'Already have an account?' : 'New to Transligual?'}{' '}<button className="text-button" type="button" onClick={() => { setMode(registering ? 'login' : 'register'); setError(''); setNotice(''); }}>{registering ? 'Sign in' : 'Create an account'}</button></p>
         </section>
       </div>

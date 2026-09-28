@@ -36,7 +36,7 @@ export class AuthService {
       });
       const token = await this.createAccountToken(user.id, AccountTokenType.EMAIL_VERIFICATION);
       await this.email.sendAccountLink(email, 'verify', token);
-      return { message: 'Check your email for a verification link.' };
+      return { message: 'Check your email. Click the link to verify your account and sign in automatically.' };
     } catch (error: unknown) {
       if (this.isUniqueConstraint(error)) throw new ConflictException('An account with this email already exists.');
       throw error;
@@ -50,8 +50,16 @@ export class AuthService {
     if (!user?.passwordHash || !(await argon2.verify(user.passwordHash, input.password))) {
       throw new UnauthorizedException('Invalid email or password.');
     }
-    if (user.status !== UserStatus.ACTIVE || !user.emailVerifiedAt) {
-      throw new UnauthorizedException('Verify your email address before signing in.');
+    if (user.status !== UserStatus.ACTIVE && user.status !== UserStatus.PENDING) {
+      throw new UnauthorizedException('This account cannot sign in.');
+    }
+    if (!user.emailVerifiedAt) {
+      const token = await this.createAccountToken(user.id, AccountTokenType.EMAIL_VERIFICATION);
+      await this.email.sendAccountLink(user.email, 'verify', token);
+      return { verificationRequired: true as const, message: 'Check your email. Click the link to verify your account and sign in automatically.' };
+    }
+    if (user.status !== UserStatus.ACTIVE) {
+      throw new UnauthorizedException('This account cannot sign in.');
     }
     await this.prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } });
     return this.authResult(user);
@@ -59,18 +67,20 @@ export class AuthService {
 
   async verifyEmail(token: string) {
     const accountToken = await this.findValidToken(token, AccountTokenType.EMAIL_VERIFICATION);
-    await this.prisma.$transaction(async (tx) => {
+    const user = await this.prisma.$transaction(async (tx) => {
       const consumed = await tx.accountToken.updateMany({
         where: { id: accountToken.id, usedAt: null, expiresAt: { gt: new Date() } },
         data: { usedAt: new Date() },
       });
       if (consumed.count !== 1) throw new BadRequestException('This verification link is invalid or has expired.');
-      await tx.user.update({
-        where: { id: accountToken.userId },
-        data: { emailVerifiedAt: new Date(), status: UserStatus.ACTIVE },
+      const activated = await tx.user.updateMany({
+        where: { id: accountToken.userId, status: { in: [UserStatus.PENDING, UserStatus.ACTIVE] }, emailVerifiedAt: null },
+        data: { emailVerifiedAt: new Date(), status: UserStatus.ACTIVE, lastLoginAt: new Date() },
       });
+      if (activated.count !== 1) throw new BadRequestException('This account cannot be verified. Try signing in or contact support.');
+      return tx.user.findUniqueOrThrow({ where: { id: accountToken.userId }, include: { profile: true } });
     });
-    return { message: 'Your email is verified. You can now sign in.' };
+    return this.authResult(user);
   }
 
   async resendVerification(emailInput: string) {

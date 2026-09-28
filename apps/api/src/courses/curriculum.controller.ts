@@ -60,7 +60,7 @@ export class CurriculumController {
   }
 
   @Post('lessons/:lessonId/materials')
-  @Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN)
+  @Roles(UserRole.TUTOR, UserRole.ADMIN, UserRole.SUPER_ADMIN)
   @UseInterceptors(lessonFileInterceptor)
   uploadMaterial(@Param('lessonId') lessonId: string, @UploadedFile() file: UploadedLessonFile | undefined, @Req() request: CourseMaterialRequest) {
     if (!file) throw new BadRequestException('Choose a course file to upload.');

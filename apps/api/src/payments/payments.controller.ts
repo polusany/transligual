@@ -18,6 +18,12 @@ export class PaymentsController {
     return this.payments.initializeCourseCheckout(request.user.sub, courseId);
   }
 
+
+  @Post('interpretation/bookings/:id/checkout')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.STUDENT)
+  bookingCheckout(@Param('id') id: string, @Req() request: AuthenticatedRequest) { return this.payments.initializeInterpretationCheckout(request.user.sub, id); }
+
   @Post('payments/verify/:reference')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.STUDENT)

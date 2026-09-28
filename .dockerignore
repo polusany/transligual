@@ -11,3 +11,10 @@ node_modules
 !**/.env.example
 !.env.production.example
 *.log
+
+**/.next-dev
+**/.env
+**/.env.*
+**/uploads
+backups
+work

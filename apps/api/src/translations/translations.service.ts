@@ -1,3 +1,4 @@
+import { RateLimitService } from '../common/rate-limit.service';
 import { BadGatewayException, Injectable, NotFoundException, ServiceUnavailableException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma.service';
@@ -6,12 +7,15 @@ import { TranslateTextDto } from './dto/translate-text.dto';
 
 @Injectable()
 export class TranslationsService {
-  constructor(private readonly prisma: PrismaService, private readonly config: ConfigService) {}
+  constructor(private readonly prisma: PrismaService, private readonly config: ConfigService, private readonly limits: RateLimitService) {}
 
   async translateText(input: TranslateTextDto) {
     const apiKey = this.config.get<string>('GOOGLE_TRANSLATE_API_KEY');
-    if (!apiKey) throw new ServiceUnavailableException('Instant translation is not configured yet. Add GOOGLE_TRANSLATE_API_KEY to the API environment.');
+    if (!apiKey) throw new ServiceUnavailableException('Instant translation is temporarily unavailable. Please try again later.');
 
+    const dailyLimit = Number(this.config.get('TRANSLATION_DAILY_CHARACTER_LIMIT') ?? 100000);
+    if (!Number.isSafeInteger(dailyLimit) || dailyLimit < 1) throw new ServiceUnavailableException('Translation is temporarily unavailable.');
+    await this.limits.consume('translation:daily:'+new Date().toISOString().slice(0,10), dailyLimit, 86400000, Array.from(input.text).length);
     let response: Response;
     try {
       response = await fetch(`https://translation.googleapis.com/language/translate/v2?key=${encodeURIComponent(apiKey)}`, {

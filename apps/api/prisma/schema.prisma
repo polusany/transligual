@@ -193,6 +193,8 @@ enum InterpretationBookingStatus {
   COMPLETED
   CANCELLED
   RESCHEDULED
+  DELIVERED
+  REVISION_REQUIRED
   REFUNDED
 }
 
@@ -243,6 +245,7 @@ model User {
   translatorProfile      TranslatorProfile?
   interpreterProfile     InterpreterProfile?
   ownedFiles             File[]                    @relation("FileOwner")
+  assessmentAttempts AssessmentAttempt[]
   taughtCourses          Course[]                  @relation("CourseTutor")
   enrollments            Enrollment[]              @relation("EnrollmentStudent")
   lessonProgress         LessonProgress[]
@@ -372,6 +375,7 @@ model Course {
   tutor                    User         @relation("CourseTutor", fields: [tutorId], references: [id], onDelete: Restrict)
   category                 Category     @relation(fields: [categoryId], references: [id], onDelete: Restrict)
   thumbnailFile            File?        @relation("CourseThumbnail", fields: [thumbnailFileId], references: [id], onDelete: SetNull)
+  assessments              Assessment[]
   modules                  CourseModule[]
   enrollments              Enrollment[]
   courseProgress           CourseProgress[]
@@ -411,6 +415,7 @@ model Lesson {
   updatedAt       DateTime     @updatedAt
   module          CourseModule @relation(fields: [moduleId], references: [id], onDelete: Cascade)
   materials       LearningMaterial[]
+  assessment      Assessment?
   quiz            Quiz?
   progress        LessonProgress[]
 
@@ -755,6 +760,8 @@ model InterpretationBooking {
   customerTimezone  String?
   locationType      InterpretationLocationType
   locationDetails   String?
+  deliveryNotes     String?
+  revisionNotes     String?
   meetingUrl        String?
   eventDetails      String?
   quotedAmountMinor BigInt?
@@ -835,4 +842,40 @@ model AuditLog {
 
   @@index([actorUserId, createdAt])
   @@index([entityType, entityId])
+}
+
+model Assessment {
+ id String @id @default(uuid())
+ courseId String
+ lessonId String? @unique
+ title String
+ questions Json
+ passPercentage Int
+ maxAttempts Int
+ durationMinutes Int?
+ isPublished Boolean @default(false)
+ createdAt DateTime @default(now())
+ course Course @relation(fields:[courseId],references:[id],onDelete:Cascade)
+ lesson Lesson? @relation(fields:[lessonId],references:[id],onDelete:Cascade)
+ attempts AssessmentAttempt[]
+ @@index([courseId,isPublished])
+}
+model AssessmentAttempt {
+ id String @id @default(uuid())
+ assessmentId String
+ studentId String
+ startedAt DateTime @default(now())
+ submittedAt DateTime?
+ score Int?
+ percentage Float?
+ passed Boolean?
+ assessment Assessment @relation(fields:[assessmentId],references:[id],onDelete:Cascade)
+ student User @relation(fields:[studentId],references:[id],onDelete:Cascade)
+ @@index([assessmentId,studentId])
+}
+model RateLimitBucket {
+ key String @id
+ count Int
+ resetAt DateTime
+ @@index([resetAt])
 }

@@ -35,7 +35,7 @@ export default function Dashboard() {
   const activeCount = courses.filter((course) => course.status === 'ACTIVE').length;
   const completeCount = courses.filter((course) => course.status === 'COMPLETED').length;
 
-  if (error) return <main className="page-shell"><div className="form-page"><section className="form-card"><p className="eyebrow">Your learning space</p><h1>Sign in to continue.</h1><p>{error}</p><Link href="/login" className="button">Sign in <span aria-hidden="true">→</span></Link></section></div></main>;
+  if (error) return <main className="page-shell"><div className="form-page"><section className="form-card"><p className="eyebrow">Your learning space</p><Link className="button-outline" href="/interpretation/bookings">Manage interpretation bookings</Link><h1>Sign in to continue.</h1><p>{error}</p><Link href="/login" className="button">Sign in <span aria-hidden="true">→</span></Link></section></div></main>;
   if (loading) return <main className="page-shell dashboard-page"><section className="empty-state"><p className="eyebrow">Your learning space</p><h2>Getting everything ready…</h2><p>Loading your account and courses.</p></section></main>;
   if (isAdmin) return <main className="page-shell dashboard-page"><section className="role-switch-card"><span className="role-switch-mark">A</span><div><p className="eyebrow">Administrator account</p><h1>This is the learner dashboard.</h1><p>Your administrator tools have a separate workspace with platform metrics, course reviews, and tutor applications.</p><Link className="button" href="/admin">Open admin dashboard <span aria-hidden="true">→</span></Link></div></section></main>;
 

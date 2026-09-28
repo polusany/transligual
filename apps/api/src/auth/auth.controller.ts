@@ -27,13 +27,8 @@ export class AuthController {
   @UseGuards(AuthRateLimitGuard)
   async login(@Body() body: LoginDto, @Res({ passthrough: true }) response: CookieResponse) {
     const result = await this.auth.login(body);
-    response.cookie(SESSION_COOKIE, result.accessToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      path: '/api/v1',
-      maxAge: SESSION_MAX_AGE_MS,
-    });
+    if ('verificationRequired' in result) return { success: true, data: result };
+    this.setSession(response, result.accessToken);
     return { success: true, data: { user: result.user } };
   }
 
@@ -50,8 +45,10 @@ export class AuthController {
 
   @Post('verify-email')
   @UseGuards(AuthRateLimitGuard)
-  async verifyEmail(@Body() body: AccountTokenDto) {
-    return { success: true, data: await this.auth.verifyEmail(body.token) };
+  async verifyEmail(@Body() body: AccountTokenDto, @Res({ passthrough: true }) response: CookieResponse) {
+    const result = await this.auth.verifyEmail(body.token);
+    this.setSession(response, result.accessToken);
+    return { success: true, data: { user: result.user } };
   }
 
   @Post('resend-verification')
@@ -76,5 +73,15 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   async me(@Req() request: AuthenticatedRequest) {
     return { success: true, data: await this.auth.me(request.user.sub) };
+  }
+
+  private setSession(response: CookieResponse, accessToken: string) {
+    response.cookie(SESSION_COOKIE, accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/api/v1',
+      maxAge: SESSION_MAX_AGE_MS,
+    });
   }
 }

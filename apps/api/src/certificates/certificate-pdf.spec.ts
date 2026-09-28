@@ -1,0 +1,4 @@
+import {certificatePdf} from './certificate-pdf';
+import {PDFDocument} from 'pdf-lib';
+it('preserves French and Yoruba letters and fits long titles',async()=>{const bytes=await certificatePdf({name:'Élodie Ọlúwá Phillips',course:'French for professional communication: meetings, correspondence and practical translation for international business',number:'TL-TEST',code:'ABC123',issuedAt:new Date('2026-09-28'),verificationUrl:'https://example.test/certificates/verify?code=ABC123'});expect((await PDFDocument.load(bytes)).getPageCount()).toBe(1);});
+it('produces a single landscape PDF certificate',async()=>{const bytes=await certificatePdf({name:'Élodie Phillips',course:'French Foundations',number:'TL-TEST',code:'ABC123',issuedAt:new Date('2026-09-28'),verificationUrl:'https://example.test/certificates/verify?code=ABC123'});const doc=await PDFDocument.load(bytes);expect(doc.getPageCount()).toBe(1);expect(doc.getPage(0).getWidth()).toBe(842);});

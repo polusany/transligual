@@ -212,6 +212,9 @@ export class CoursesService {
     if (course.status !== CourseStatus.SUBMITTED && course.status !== CourseStatus.UNDER_REVIEW && course.status !== CourseStatus.APPROVED) throw new BadRequestException('Only courses submitted for review can be published.');
     const lessons = await this.prisma.lesson.count({ where: { module: { courseId } } });
     if (lessons === 0) throw new BadRequestException('Add at least one course section and lesson before publishing this course.');
+
+    const unfinishedQuizzes = await this.prisma.lesson.count({where:{module:{courseId},lessonType:'QUIZ',OR:[{assessment:null},{assessment:{isPublished:false}}]}});
+    if (unfinishedQuizzes) throw new BadRequestException('Publish an assessment for every quiz lesson before publishing the course.');
     const [published] = await this.prisma.$transaction([
       this.prisma.course.update({ where: { id: courseId }, data: { status: CourseStatus.PUBLISHED, publishedAt: new Date() } }),
       this.prisma.auditLog.create({ data: { actorUserId: actorId, action: 'course.published', entityType: 'Course', entityId: courseId } }),
@@ -247,7 +250,7 @@ export class CoursesService {
           orderBy: { sortOrder: 'asc' },
           select: {
             id: true, title: true, description: true, sortOrder: true,
-            lessons: { orderBy: { sortOrder: 'asc' }, select: { id: true, title: true, description: true, lessonType: true, sortOrder: true, isPreview: true, durationMinutes: true } },
+            lessons: { orderBy: { sortOrder: 'asc' }, select: { id: true, title: true, lessonType: true, sortOrder: true, isPreview: true, durationMinutes: true } },
           },
         },
       },

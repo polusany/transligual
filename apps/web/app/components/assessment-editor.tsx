@@ -1,0 +1,16 @@
+'use client';
+import {useState} from 'react';
+import {apiRequest} from '../lib/api';
+type Q={text:string;options:string[];correct:number[];points:number};
+export default function AssessmentEditor({courseId,lessons}:{courseId:string;lessons:{id:string;title:string;lessonType:string}[]}) {
+ const [questions,setQuestions]=useState<Q[]>([{text:'',options:['',''],correct:[0],points:1}]);
+ const [message,setMessage]=useState('');const [busy,setBusy]=useState(false);
+ function change(index:number,patch:Partial<Q>){setQuestions(q=>q.map((v,i)=>i===index?{...v,...patch}:v));}
+ return <details className="form-card"><summary>Create a quiz or final exam</summary><form onSubmit={async e=>{e.preventDefault();setBusy(true);setMessage('');const f=new FormData(e.currentTarget);try{await apiRequest('/courses/'+courseId+'/assessments',{method:'POST',body:JSON.stringify({title:f.get('title'),lessonId:f.get('lessonId')||undefined,passPercentage:Number(f.get('pass')),maxAttempts:Number(f.get('attempts')),durationMinutes:Number(f.get('duration'))||undefined,isPublished:true,questions})});setMessage('Assessment saved. It is required for course certification.');}catch(e){setMessage(e instanceof Error?e.message:'Could not save.');}finally{setBusy(false);}}}>
+ <label>Title<input name="title" minLength={2} maxLength={140} required/></label>
+ <label>Assessment placement<select name="lessonId"><option value="">Final course exam</option>{lessons.filter(l=>l.lessonType==='QUIZ').map(l=><option key={l.id} value={l.id}>{l.title}</option>)}</select></label>
+ <div className="form-row"><label>Pass mark (%)<input name="pass" type="number" min={1} max={100} defaultValue={70} required/></label><label>Maximum attempts<input name="attempts" type="number" min={1} max={20} defaultValue={3} required/></label><label>Time limit in minutes (optional)<input name="duration" type="number" min={1} max={240}/></label></div>
+ {questions.map((q,i)=><fieldset key={i}><legend>Question {i+1}</legend><label>Question<textarea value={q.text} required minLength={2} maxLength={2000} onChange={e=>change(i,{text:e.target.value})}/></label><label>Points<input type="number" min={1} max={100} value={q.points} onChange={e=>change(i,{points:Number(e.target.value)})}/></label><p>Select every correct answer.</p>{q.options.map((o,j)=><div key={j} className="form-row"><label>Option {j+1}<input value={o} required maxLength={500} onChange={e=>change(i,{options:q.options.map((v,k)=>k===j?e.target.value:v)})}/></label><label className="checkbox-label"><input type="checkbox" checked={q.correct.includes(j)} onChange={e=>change(i,{correct:e.target.checked?[...q.correct,j]:q.correct.filter(k=>k!==j)})}/>Correct</label></div>)}{q.options.length<8&&<button type="button" className="button-outline" onClick={()=>change(i,{options:[...q.options,'']})}>Add option</button>}{questions.length>1&&<button type="button" onClick={()=>setQuestions(v=>v.filter((_,j)=>j!==i))}>Remove question</button>}</fieldset>)}
+ {questions.length<100&&<button type="button" className="button-outline" onClick={()=>setQuestions(v=>[...v,{text:'',options:['',''],correct:[0],points:1}])}>Add question</button>}
+ <button className="button" disabled={busy||questions.some(q=>!q.correct.length)}>{busy?'Saving…':'Save assessment'}</button><p role="status">{message}</p></form></details>;
+}

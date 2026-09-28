@@ -13,12 +13,19 @@ export class CertificatesService {
       this.prisma.course.findUnique({ where: { id: courseId }, select: { id: true, title: true, certificateEnabled: true } }),
     ]);
     if (!enrollment || enrollment.status !== EnrollmentStatus.COMPLETED || !course?.certificateEnabled) return null;
+
+    const outstanding = await this.prisma.assessment.count({where:{courseId,isPublished:true,attempts:{none:{studentId,passed:true}}}});
+    if (outstanding) return null;
     const existing = await this.prisma.certificate.findFirst({ where: { studentId, courseId }, select: { id: true, certificateNumber: true, verificationCode: true } });
     if (existing) return existing;
     const code = randomBytes(12).toString('hex').toUpperCase();
     const certificateNumber = `TL-${new Date().getUTCFullYear()}-${randomBytes(5).toString('hex').toUpperCase()}`;
     try {
       return await this.prisma.$transaction(async (tx) => {
+
+        await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${studentId+':certificate:'+courseId}))`;
+        const issued=await tx.certificate.findFirst({where:{studentId,courseId},select:{id:true,certificateNumber:true,verificationCode:true}});
+        if(issued)return issued;
         const certificate = await tx.certificate.create({ data: { studentId, courseId, certificateNumber, verificationCode: code, status: CertificateStatus.ACTIVE } });
         await tx.certificateVerification.create({ data: { certificateId: certificate.id, verificationCode: code } });
         await tx.auditLog.create({ data: { actorUserId: studentId, action: 'certificate.issued', entityType: 'Certificate', entityId: certificate.id } });

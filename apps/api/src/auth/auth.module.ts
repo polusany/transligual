@@ -1,3 +1,4 @@
+import { RateLimitService } from '../common/rate-limit.service';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
@@ -22,7 +23,7 @@ import { PrismaService } from '../prisma.service';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, AuthEmailService, AuthRateLimitGuard, PrismaService, JwtAuthGuard, RolesGuard],
+  providers: [RateLimitService, AuthService, AuthEmailService, AuthRateLimitGuard, PrismaService, JwtAuthGuard, RolesGuard],
   exports: [AuthService, JwtModule, JwtAuthGuard, RolesGuard],
 })
 export class AuthModule {}

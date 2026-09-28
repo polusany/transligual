@@ -1,10 +1,12 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { FormEvent, useEffect, useState } from 'react';
-import { apiRequest } from '../lib/api';
+import { apiRequest, CurrentUser } from '../lib/api';
 
 export default function VerifyEmailPage() {
+  const router = useRouter();
   const [token, setToken] = useState('');
   const [email, setEmail] = useState('');
   const [notice, setNotice] = useState('');
@@ -17,11 +19,16 @@ export default function VerifyEmailPage() {
     window.history.replaceState({}, '', window.location.pathname);
     setToken(value);
     setBusy(true);
-    apiRequest<{ message: string }>('/auth/verify-email', { method: 'POST', body: JSON.stringify({ token: value }) })
-      .then((result) => setNotice(result.message))
+    apiRequest<{ user: CurrentUser }>('/auth/verify-email', { method: 'POST', body: JSON.stringify({ token: value }) })
+      .then(({ user }) => {
+        setNotice('Your email is verified. Signing you in…');
+        router.replace(user.roles.some((role) => ['ADMIN', 'SUPER_ADMIN'].includes(role))
+          ? '/admin' : user.roles.includes('TUTOR') ? '/instructor/courses' : '/dashboard');
+        router.refresh();
+      })
       .catch((caught: unknown) => setError(caught instanceof Error ? caught.message : 'This verification link could not be used.'))
       .finally(() => setBusy(false));
-  }, []);
+  }, [router]);
 
   async function resend(event: FormEvent<HTMLFormElement>) {
     event.preventDefault(); setBusy(true); setError(''); setNotice('');

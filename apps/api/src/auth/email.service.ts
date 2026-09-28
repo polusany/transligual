@@ -12,7 +12,7 @@ export class AuthEmailService {
     const url = `${webUrl}/${purpose === 'verify' ? 'verify-email' : 'reset-password'}#token=${encodeURIComponent(token)}`;
     const isVerification = purpose === 'verify';
     const subject = isVerification ? 'Verify your Transligual email' : 'Reset your Transligual password';
-    const action = isVerification ? 'Verify email address' : 'Choose a new password';
+    const action = isVerification ? 'Verify email and sign in' : 'Choose a new password';
     const expiry = isVerification ? '24 hours' : '30 minutes';
     const apiKey = this.config.get<string>('RESEND_API_KEY');
     const from = this.config.get<string>('EMAIL_FROM');

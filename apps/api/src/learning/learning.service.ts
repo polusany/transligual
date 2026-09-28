@@ -64,6 +64,13 @@ export class LearningService {
     const enrollment = await this.prisma.enrollment.findUnique({ where: { studentId_courseId: { studentId, courseId } }, select: { id: true, status: true } });
     if (!enrollment || (enrollment.status !== EnrollmentStatus.ACTIVE && enrollment.status !== EnrollmentStatus.COMPLETED)) throw new ForbiddenException('An active course enrollment is required to save progress.');
 
+
+    if (input.progressPercentage >= 100) {
+      const assessment = await this.prisma.assessment.findUnique({ where: { lessonId } });
+      const kind = await this.prisma.lesson.findUnique({ where: { id: lessonId }, select: { lessonType: true } });
+      if (kind?.lessonType === 'QUIZ' && !assessment?.isPublished) throw new ForbiddenException('This quiz is not ready yet.');
+      if (assessment?.isPublished && !await this.prisma.assessmentAttempt.findFirst({ where: { assessmentId: assessment.id, studentId, passed: true } })) throw new ForbiddenException('Pass this lesson assessment before marking it complete.');
+    }
     const percent = await this.prisma.$transaction(async (tx) => {
       const existing = await tx.lessonProgress.findUnique({ where: { enrollmentId_lessonId: { enrollmentId: enrollment.id, lessonId } }, select: { progressPercentage: true } });
       const progressPercentage = Math.max(existing ? Number(existing.progressPercentage) : 0, input.progressPercentage);

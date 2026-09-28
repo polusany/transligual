@@ -13,7 +13,7 @@ export default function AccountActions() {
   useEffect(() => {
     apiRequest<CurrentUser>('/auth/me')
       .then(setUser)
-      .catch(() => undefined)
+      .catch(() => setUser(null))
       .finally(() => setReady(true));
   }, [pathname]);
 
@@ -21,8 +21,8 @@ export default function AccountActions() {
 
   const isAdmin = user.roles.some((role) => ['ADMIN', 'SUPER_ADMIN'].includes(role));
   const isTutor = user.roles.includes('TUTOR');
-  const href = isAdmin ? '/admin' : isTutor ? '/instructor/courses' : '/dashboard';
-  const label = isAdmin ? 'Admin console' : isTutor ? 'Tutor studio' : 'My dashboard';
+  const href = isAdmin ? '/admin' : isTutor ? '/instructor/courses' : user.roles.includes('INTERPRETER') ? '/interpreter' : '/dashboard';
+  const label = isAdmin ? 'Admin console' : isTutor ? 'Tutor studio' : user.roles.includes('INTERPRETER') ? 'Interpreter workspace' : 'My dashboard';
   const name = user.profile?.displayName || user.profile?.firstName || label;
 
   async function signOut() {

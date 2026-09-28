@@ -4,7 +4,7 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 const API_SERVER_URL = (process.env.API_INTERNAL_URL ?? 'http://localhost:4000/api/v1').replace(/\/$/, '');
-const FORWARDED_REQUEST_HEADERS = ['accept', 'content-type', 'cookie', 'idempotency-key', 'range', 'x-forwarded-for'];
+const FORWARDED_REQUEST_HEADERS = ['accept', 'content-type', 'cookie', 'idempotency-key', 'range', 'x-forwarded-for', 'x-paystack-signature'];
 const FORWARDED_RESPONSE_HEADERS = ['accept-ranges', 'content-disposition', 'content-length', 'content-range', 'content-type', 'cache-control', 'etag', 'retry-after', 'set-cookie', 'x-content-type-options'];
 
 async function proxy(request: NextRequest, context: { params: Promise<{ path: string[] }> }): Promise<Response> {
@@ -23,13 +23,15 @@ async function proxy(request: NextRequest, context: { params: Promise<{ path: st
     if (value) headers.set(name, value);
   }
 
-  const upstream = await fetch(upstreamUrl, {
+  let upstream: Response;
+  try { upstream = await fetch(upstreamUrl, {
     method,
     headers,
     body: method === 'GET' || method === 'HEAD' ? undefined : await request.arrayBuffer(),
     cache: 'no-store',
     redirect: 'manual',
-  });
+    signal: AbortSignal.timeout(30000),
+  }); } catch { return Response.json({success:false,error:{message:'The service is temporarily unavailable. Please try again shortly.'}},{status:503}); }
   const responseHeaders = new Headers();
   for (const name of FORWARDED_RESPONSE_HEADERS) {
     const value = upstream.headers.get(name);
