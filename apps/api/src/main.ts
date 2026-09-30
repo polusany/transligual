@@ -22,9 +22,6 @@ async function bootstrap() {
   if (isProduction && (!process.env.RESEND_API_KEY || process.env.RESEND_API_KEY.startsWith('re_replace') || !process.env.EMAIL_FROM || process.env.EMAIL_FROM.includes('.example') || !process.env.WEB_APP_URL)) {
     throw new Error('RESEND_API_KEY, EMAIL_FROM, and WEB_APP_URL are required for account verification and recovery emails.');
   }
-  if (isProduction && (!process.env.GOOGLE_TRANSLATE_API_KEY || process.env.GOOGLE_TRANSLATE_API_KEY.startsWith('replace-'))) {
-    throw new Error('GOOGLE_TRANSLATE_API_KEY is required for the public instant-translation tool.');
-  }
   for (const origin of origins) {
     const parsed = new URL(origin);
     if (parsed.origin !== origin || origin === '*') {

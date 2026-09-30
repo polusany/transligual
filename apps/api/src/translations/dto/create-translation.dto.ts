@@ -1,12 +1,11 @@
-import { TranslationServiceType } from '@prisma/client';
-import { IsDateString, IsEnum, IsInt, IsOptional, IsString, Max, MaxLength, Min, MinLength } from 'class-validator';
-
+import { Transform } from 'class-transformer';
+import { IsString, MaxLength, MinLength } from 'class-validator';
+const trim = ({ value }: { value: unknown }) => typeof value === 'string' ? value.trim() : value;
 export class CreateTranslationDto {
-  @IsString() @MinLength(2) @MaxLength(80) sourceLanguage!: string;
-  @IsString() @MinLength(2) @MaxLength(80) targetLanguage!: string;
-  @IsEnum(TranslationServiceType) serviceType!: TranslationServiceType;
-  @IsOptional() @IsString() @MaxLength(140) documentType?: string;
-  @IsOptional() @IsInt() @Min(1) @Max(10000) pageCount?: number;
-  @IsOptional() @IsDateString() deadlineAt?: string;
-  @IsOptional() @IsString() @MaxLength(5000) instructions?: string;
+  @Transform(trim) @IsString() @MinLength(2) @MaxLength(80) sourceLanguage!: string;
+  @Transform(trim) @IsString() @MinLength(2) @MaxLength(80) targetLanguage!: string;
+  @Transform(trim) @IsString() @MinLength(1) @MaxLength(5000) sourceText!: string;
+}
+export class ReplyTranslationDto {
+  @Transform(trim) @IsString() @MinLength(1) @MaxLength(20000) translatedText!: string;
 }

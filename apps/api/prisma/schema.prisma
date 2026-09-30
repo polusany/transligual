@@ -687,6 +687,10 @@ model Payout {
 }
 
 model TranslationRequest {
+  sourceText        String?
+  translatedText    String?
+  repliedAt         DateTime?
+  repliedById       String?
   id                String                 @id @default(uuid())
   customerId        String
   sourceLanguage    String

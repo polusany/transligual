@@ -1,6 +1,6 @@
 # Transligual
 
-Transligual is a language learning and services platform built with Next.js, NestJS, Prisma, and PostgreSQL. Its product areas are the public course library, learner workspace, administrator console, instant text translation, interpretation bookings, and course certificates.
+Transligual is a language learning and services platform built with Next.js, NestJS, Prisma, and PostgreSQL. Its product areas are the public course library, learner workspace, administrator console, admin-assisted text translation, interpretation bookings, and course certificates.
 
 ## Run locally (Ubuntu 24.04 on WSL)
 
@@ -31,7 +31,7 @@ Before the first seed, set `BOOTSTRAP_ADMIN_EMAIL` and `BOOTSTRAP_ADMIN_PASSWORD
 - Learners verify email before signing in, can request a password reset, enroll in free courses, and see their active course room and lesson progress. Browser sessions use short-lived HttpOnly cookies.
 - Tutors apply for approval. An approved tutor can create a draft, add curriculum sections and lessons, then submit it for administrator review. An administrator can publish a complete course.
 - Paid course checkout is server-initialized and access is granted only after the payment provider confirms the expected amount and currency. The payment return page checks the transaction again with the API.
-- Learners can translate text with the configured translation provider. Interpretation bookings support staff quotes, verified payment, approved interpreter assignment, session delivery, customer revisions, and acceptance.
+- Learners can submit text translation requests and read administrator replies. Interpretation bookings support staff quotes, verified payment, approved interpreter assignment, session delivery, customer revisions, and acceptance.
 - Instructors can author lesson quizzes and timed final exams. Grading runs on the server, with attempt limits. Quiz lessons require a passing assessment before completion. Certificates require all published assessments to be passed and all lessons completed.
 - Learners can download a certificate PDF or print the certificate page. The public verification page checks its current status.
 
@@ -40,9 +40,9 @@ Before the first seed, set `BOOTSTRAP_ADMIN_EMAIL` and `BOOTSTRAP_ADMIN_PASSWORD
 - Paid checkout needs a valid `PAYSTACK_SECRET_KEY` in `apps/api/.env`, plus a Paystack webhook pointed at `/api/v1/payments/webhooks/paystack`. Until configured, paid checkout returns a clear unavailable response; free enrollment works.
 - `AUTH_JWT_SECRET` must be a long, random secret and must be identical for all API instances.
 - Account email verification and password recovery use Resend. Registration sends a verification email; a correct password login also sends a new link if the email is still unverified. Clicking the link verifies the account and signs the user in automatically. Later logins use the email and password without another verification email. Configure `RESEND_API_KEY`, a verified sender in `EMAIL_FROM`, and `WEB_APP_URL`. In local development without those values, the API logs a one-time link for manual use; production startup rejects missing email configuration.
-- Public instant translation uses Google Cloud Translation Basic. Set `GOOGLE_TRANSLATE_API_KEY` in the API environment only; never expose it in the web app. Google currently includes the first 500,000 translated characters per month in a monthly credit and charges for usage beyond that, so set a billing budget and API restrictions in Google Cloud before inviting public traffic.
-- Administrators and course-owning tutors can upload MP4/WebM videos, MP3/WAV/OGG audio, PDFs, and PNG/JPEG images up to 50 MB per lesson. Uploads are stored in the API's private `UPLOAD_DIR`; learners need an active course enrollment to stream or download course materials. The production Compose file keeps uploads in the `course_uploads` volume, which must be included in host backups. The instant translator handles text only.
-- Account and translation limits are shared through PostgreSQL. `TRANSLATION_DAILY_CHARACTER_LIMIT` caps reserved translation characters across API instances (default 100000 per UTC day). Also configure provider quotas. The production API must remain private behind the trusted reverse proxy, which supplies the client address.
+- Translation is text-only and handled by administrators. Students submit at `/services/translation`; staff reply at `/admin/translations`. Requests are limited to 5,000 characters and 20 per account per day. Google Translation credentials are not required.
+- Administrators and course-owning tutors can upload MP4/WebM videos, MP3/WAV/OGG audio, PDFs, and PNG/JPEG images up to 50 MB per lesson. Uploads are stored in the API's private `UPLOAD_DIR`; learners need an active course enrollment to stream or download course materials. The production Compose file keeps uploads in the `course_uploads` volume, which must be included in host backups. Translation requests accept text only.
+- Account and translation limits are shared through PostgreSQL. The production API must remain private behind the trusted reverse proxy, which supplies the client address.
 - Staff manage bookings at `/admin/interpretation`, approved interpreters at `/interpreter`, and customers at `/interpretation/bookings`. Delivery consists of a private session summary; document attachments and automatic refunds are not implemented. Refunds need staff handling in Paystack and verified reconciliation.
 - Backup, isolated restore-check and monitoring scripts are under `ops/`. They still need deployment, an off-host backup destination, a schedule and an alert destination. See `docs/LAUNCH_CHECKLIST.md` for verified checks and remaining launch requirements.
 
@@ -90,3 +90,9 @@ The local Compose file starts PostgreSQL only. Keep `pnpm dev` running in a sepa
 The website defaults to the API's IPv4 loopback address because the API listens on IPv4. For containers, set `API_INTERNAL_URL=http://api:4000/api/v1` as in the production Compose configuration. Proxy connection failures log a safe error code in the Next.js terminal; timeouts return 504 and unreachable services return 503. Restart the web process after changing environment variables.
 
 Run proxy regression tests with Node 22.6 or newer: `pnpm --filter @transligual/web test`.
+
+## Deploy the manual translation update
+
+After pulling this release, run `pnpm db:generate` and `pnpm --filter @transligual/api prisma:deploy`, then restart the API and web app. The migration adds nullable text/reply fields and preserves existing requests. Legacy requests without text are visible but require a new text submission. Google Translation keys are no longer needed. Admin replies are delivered in the website request history; no reply email is sent.
+
+Validate the service with `pnpm --filter @transligual/api test:translations`. In two separate signed-in sessions, submit text as a student, reply at `/admin/translations` as an admin, and refresh the student’s request history. Verify a different student cannot access that request and a student cannot access the admin inbox.

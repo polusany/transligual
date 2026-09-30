@@ -1,63 +1,46 @@
-import { RateLimitService } from '../common/rate-limit.service';
-import { BadGatewayException, Injectable, NotFoundException, ServiceUnavailableException } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import { BadRequestException, ConflictException, GoneException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
-import { CreateTranslationDto } from './dto/create-translation.dto';
+import { RateLimitService } from '../common/rate-limit.service';
+import { CreateTranslationDto, ReplyTranslationDto } from './dto/create-translation.dto';
 import { TranslateTextDto } from './dto/translate-text.dto';
 
 @Injectable()
 export class TranslationsService {
-  constructor(private readonly prisma: PrismaService, private readonly config: ConfigService, private readonly limits: RateLimitService) {}
+  constructor(private readonly prisma: PrismaService, private readonly limits: RateLimitService) {}
 
-  async translateText(input: TranslateTextDto) {
-    const apiKey = this.config.get<string>('GOOGLE_TRANSLATE_API_KEY');
-    if (!apiKey) throw new ServiceUnavailableException('Instant translation is temporarily unavailable. Please try again later.');
-
-    const dailyLimit = Number(this.config.get('TRANSLATION_DAILY_CHARACTER_LIMIT') ?? 100000);
-    if (!Number.isSafeInteger(dailyLimit) || dailyLimit < 1) throw new ServiceUnavailableException('Translation is temporarily unavailable.');
-    await this.limits.consume('translation:daily:'+new Date().toISOString().slice(0,10), dailyLimit, 86400000, Array.from(input.text).length);
-    let response: Response;
-    try {
-      response = await fetch(`https://translation.googleapis.com/language/translate/v2?key=${encodeURIComponent(apiKey)}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ q: input.text, target: input.targetLanguage, source: input.sourceLanguage, format: 'text' }),
-        signal: AbortSignal.timeout(15_000),
-      });
-    } catch {
-      throw new BadGatewayException('The translation service could not be reached. Please try again.');
-    }
-
-    const body: unknown = await response.json().catch(() => null);
-    if (!response.ok || !body || typeof body !== 'object' || !('data' in body)) {
-      throw new BadGatewayException('Translation is temporarily unavailable. Check the provider configuration and try again.');
-    }
-    const data = body.data;
-    if (!data || typeof data !== 'object' || !('translations' in data) || !Array.isArray(data.translations)) {
-      throw new BadGatewayException('The translation service returned an unexpected response.');
-    }
-    const translated = data.translations[0];
-    if (!translated || typeof translated !== 'object' || !('translatedText' in translated) || typeof translated.translatedText !== 'string') {
-      throw new BadGatewayException('The translation service returned no translated text.');
-    }
-    return {
-      translatedText: translated.translatedText,
-      detectedSourceLanguage: 'detectedSourceLanguage' in translated && typeof translated.detectedSourceLanguage === 'string' ? translated.detectedSourceLanguage : input.sourceLanguage ?? null,
-      targetLanguage: input.targetLanguage,
-    };
+  translateText(_input: TranslateTextDto) {
+    throw new GoneException('Instant translation has been replaced. Submit a text request at /services/translation for an administrator to reply.');
   }
 
-  createRequest(customerId: string, input: CreateTranslationDto) {
-    return this.prisma.translationRequest.create({ data: { customerId, sourceLanguage: input.sourceLanguage.trim(), targetLanguage: input.targetLanguage.trim(), serviceType: input.serviceType, documentType: input.documentType?.trim() || null, pageCount: input.pageCount ?? null, deadlineAt: input.deadlineAt ? new Date(input.deadlineAt) : null, instructions: input.instructions?.trim() || null } });
+  async createRequest(customerId: string, input: CreateTranslationDto) {
+    if (input.sourceLanguage.toLowerCase() === input.targetLanguage.toLowerCase()) throw new BadRequestException('Choose two different languages.');
+    await this.limits.consume('translation:requests:'+customerId, 20, 86400000);
+    return this.prisma.translationRequest.create({ data: { customerId, sourceLanguage: input.sourceLanguage, targetLanguage: input.targetLanguage, sourceText: input.sourceText, serviceType: 'GENERAL_DOCUMENT' } });
   }
 
   listMine(customerId: string) {
-    return this.prisma.translationRequest.findMany({ where: { customerId }, orderBy: { createdAt: 'desc' }, select: { id: true, sourceLanguage: true, targetLanguage: true, serviceType: true, documentType: true, pageCount: true, deadlineAt: true, instructions: true, quotedAmountMinor: true, currency: true, status: true, createdAt: true } });
+    return this.prisma.translationRequest.findMany({ where: { customerId }, orderBy: { createdAt: 'desc' } });
   }
 
   async findMine(customerId: string, id: string) {
-    const request = await this.prisma.translationRequest.findFirst({ where: { id, customerId }, select: { id: true, sourceLanguage: true, targetLanguage: true, serviceType: true, documentType: true, pageCount: true, deadlineAt: true, instructions: true, quotedAmountMinor: true, currency: true, status: true, createdAt: true, updatedAt: true } });
+    const request = await this.prisma.translationRequest.findFirst({ where: { id, customerId } });
     if (!request) throw new NotFoundException('Translation request not found.');
     return request;
+  }
+
+  listForAdmin() {
+    return this.prisma.translationRequest.findMany({ orderBy: { createdAt: 'desc' }, include: { customer: { select: { email: true } } } });
+  }
+
+  async reply(id: string, actorId: string, input: ReplyTranslationDto) {
+    return this.prisma.$transaction(async tx => {
+      const request = await tx.translationRequest.findUnique({ where: { id } });
+      if (!request) throw new NotFoundException('Translation request not found.');
+      if (!request.sourceText) throw new ConflictException('This older request has no source text. Ask the customer to submit a new text request.');
+      const result = await tx.translationRequest.updateMany({ where: { id, status: 'REQUESTED' }, data: { translatedText: input.translatedText, repliedAt: new Date(), repliedById: actorId, status: 'COMPLETED' } });
+      if (!result.count) throw new ConflictException('This request has already been answered or is no longer awaiting a reply. Refresh the list.');
+      await tx.auditLog.create({ data: { actorUserId: actorId, action: 'translation.replied', entityType: 'TranslationRequest', entityId: id } });
+      return tx.translationRequest.findUnique({ where: { id } });
+    });
   }
 }

@@ -1,3 +1,4 @@
+import { AdminTranslationsController } from './admin-translations.controller';
 import { RateLimitService } from '../common/rate-limit.service';
 import { Module } from '@nestjs/common';
 import { AuthModule } from '../auth/auth.module';
@@ -7,5 +8,5 @@ import { InstantTranslationController } from './instant-translation.controller';
 import { TranslationsService } from './translations.service';
 import { TranslationRateLimitGuard } from './translation-rate-limit.guard';
 
-@Module({ imports: [AuthModule], controllers: [TranslationsController, InstantTranslationController], providers: [RateLimitService, TranslationsService, PrismaService, TranslationRateLimitGuard] })
+@Module({ imports: [AuthModule], controllers: [AdminTranslationsController, TranslationsController, InstantTranslationController], providers: [RateLimitService, TranslationsService, PrismaService, TranslationRateLimitGuard] })
 export class TranslationsModule {}
