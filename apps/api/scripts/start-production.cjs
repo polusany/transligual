@@ -3,9 +3,12 @@ const path = require('node:path');
 
 // Run from the monorepo root regardless of the host's working directory.
 const root = path.resolve(__dirname, '../../..');
-process.chdir(root);
-const migration = spawnSync('pnpm', ['--filter', '@transligual/api', 'prisma:deploy'], {
-  cwd: root,
+const apiDirectory = path.join(root, 'apps/api');
+process.chdir(apiDirectory);
+// Use the CLI installed in the image; no runtime package-manager download.
+const prismaCli = require.resolve('prisma');
+const migration = spawnSync(process.execPath, [prismaCli, 'migrate', 'deploy'], {
+  cwd: apiDirectory,
   stdio: 'inherit',
   env: process.env,
 });
