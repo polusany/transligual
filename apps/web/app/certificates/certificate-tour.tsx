@@ -7,21 +7,21 @@ export default function CertificateTour() {
         <p className="eyebrow">Your learning, recognised</p>
         <h1 id="certificate-tour-title">Certificate tour</h1>
         <p className="ct-lead">See what you’ll earn. Understand what it means.</p>
-        <p>Explore your Transligual certificate before you start learning, from the course you complete to the code that verifies your achievement.</p>
+        <p>Explore your Translingual certificate before you start learning, from the course you complete to the code that verifies your achievement.</p>
         <div className="ct-actions"><Link className="button" href="/courses">Explore courses <span aria-hidden="true">→</span></Link><a className="text-link" href="#earned-certificates">My certificates <span aria-hidden="true">↗</span></a></div>
         <div className="ct-tags"><span>Personalised PDF</span><span>Course completion</span><span>Public verification</span></div>
       </div>
       <figure className="ct-preview">
         <div className="ct-paper">
-          <div className="ct-paper-top"><strong>TRANSLIGUAL</strong><span>Sample preview</span></div>
+          <div className="ct-paper-top"><strong>TRANSLINGUAL</strong><span>Sample preview</span></div>
           <div className="ct-paper-body"><span className="ct-seal" aria-hidden="true">T</span><p className="ct-kicker">Certificate of</p><h2>Completion</h2><p>This certifies that</p><p className="ct-name">Your name</p><p>has completed the required lessons and assessments for</p><p className="ct-course">Your course title</p></div>
           <div className="ct-paper-bottom"><div><span>Issue date</span><strong>Upon completion</strong></div><div><span>Certificate number</span><strong>Assigned when issued</strong></div></div>
-          <p className="ct-code">Unique verification code · Issued by Transligual</p>
+          <p className="ct-code">Unique verification code · Issued by Translingual</p>
         </div>
         <figcaption>Illustrative preview. Your issued PDF includes your name, course, issue date and unique verification details.</figcaption>
       </figure>
     </div>
-    <div className="ct-type"><div><p className="eyebrow">Know your certificate</p><h2>Certificate of completion</h2></div><div><p>This is the certificate currently awarded by Transligual. It records completion of a certificate-enabled course and its required assessments.</p><p className="ct-muted">The course title identifies what you studied. It is a Transligual course achievement, not a diploma or an external language-proficiency qualification.</p></div></div>
+    <div className="ct-type"><div><p className="eyebrow">Know your certificate</p><h2>Certificate of completion</h2></div><div><p>This is the certificate currently awarded by Translingual. It records completion of a certificate-enabled course and its required assessments.</p><p className="ct-muted">The course title identifies what you studied. It is a Translingual course achievement, not a diploma or an external language-proficiency qualification.</p></div></div>
     <section className="ct-details" aria-labelledby="ct-details-title"><div className="ct-section-heading"><p className="eyebrow">A closer look</p><h2 id="ct-details-title">What your certificate tells you</h2></div><div className="ct-detail-grid">
       <article><span className="ct-number">01</span><h3>Your name &amp; course</h3><p>Identifies the learner and the exact course completed. Each eligible course earns its own certificate.</p></article>
       <article><span className="ct-number">02</span><h3>Your achievement</h3><p>Confirms you completed the course requirements and passed its published assessments.</p></article>

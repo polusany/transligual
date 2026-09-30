@@ -157,6 +157,23 @@ h1,h2,h3{font-family:'DM Serif Display',Georgia,serif;font-weight:400;letter-spa
 @media print { .certificate-tour, .ct-earned-heading { display: none; } }
 .manual-language-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 24px 0; }
 .manual-requests { margin-top: 48px; }
+.language-field { display: grid; gap: 12px; min-width: 0; }
+/* Allow content to shrink inside grids instead of widening the whole page. */
+.page-shell { width: 100%; }
+.page-shell :where(section, article, aside, form, label, input, select, textarea), .admin-secondary-content { min-width: 0; }
+.page-shell :where(h1, h2, h3, p, a) { overflow-wrap: anywhere; }
+.site-header-inner, .workspace-header-inner { height: auto; min-height: 78px; flex-wrap: wrap; padding-top: 12px; padding-bottom: 12px; }
+.site-actions, .workspace-header-actions { min-width: 0; flex-wrap: wrap; }
+.account-greeting { max-width: 160px; overflow-wrap: anywhere; }
+@media (min-width: 721px) and (max-width: 1200px) {
+  .site-header-inner { gap: 16px; }
+  .site-header-inner > .site-actions { margin-left: auto; }
+  .site-nav { order: 3; flex-basis: 100%; flex-wrap: wrap; }
+}
+@media (max-width: 720px) {
+  .site-header-inner > .site-actions { flex-basis: 100%; justify-content: flex-end; }
+  .workspace-header-actions { width: 100%; justify-content: flex-end; }
+}
 .manual-request { background: #fffdf7; border: 1px solid #deded0; border-radius: 16px; padding: 24px; }
 .manual-text { white-space: pre-wrap; overflow-wrap: anywhere; }
 .manual-reply { border-left: 3px solid #1d7168; padding: 4px 20px; margin: 24px 0; background: #edf3ef; }

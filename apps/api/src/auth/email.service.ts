@@ -11,7 +11,7 @@ export class AuthEmailService {
     const webUrl = (this.config.get<string>('WEB_APP_URL') ?? 'http://localhost:3000').replace(/\/$/, '');
     const url = `${webUrl}/${purpose === 'verify' ? 'verify-email' : 'reset-password'}#token=${encodeURIComponent(token)}`;
     const isVerification = purpose === 'verify';
-    const subject = isVerification ? 'Verify your Transligual email' : 'Reset your Transligual password';
+    const subject = isVerification ? 'Verify your Translingual email' : 'Reset your Translingual password';
     const action = isVerification ? 'Verify email and sign in' : 'Choose a new password';
     const expiry = isVerification ? '24 hours' : '30 minutes';
     const apiKey = this.config.get<string>('RESEND_API_KEY');

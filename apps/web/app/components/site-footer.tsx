@@ -15,7 +15,7 @@ export default function SiteFooter() {
           <div><p className="footer-label">Your account</p><Link href="/login">Learner sign in</Link><Link href="/dashboard">Learner dashboard</Link><Link href="/instructor/courses">Tutor dashboard</Link><Link href="/admin/login">Admin sign in</Link></div>
         </div>
       </div>
-      <div className="footer-bottom"><span>© {new Date().getFullYear()} Transligual</span><span>Built for a world that speaks many languages.</span></div>
+      <div className="footer-bottom"><span>© {new Date().getFullYear()} Translingual</span><span>Built for a world that speaks many languages.</span></div>
     </footer>
   );
 }

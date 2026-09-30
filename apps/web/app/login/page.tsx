@@ -17,7 +17,25 @@ export default function Login() {
 
   useEffect(() => {
     setMode(new URLSearchParams(window.location.search).get('mode') === 'register' ? 'register' : 'login');
-  }, []);
+    const token = new URLSearchParams(window.location.hash.slice(1)).get('token');
+    if (!token) return;
+    window.history.replaceState({}, '', window.location.pathname);
+    setMode('login');
+    setIsSubmitting(true);
+    setNotice('Verifying your email and opening your dashboard…');
+    apiRequest<{ user: CurrentUser }>('/auth/verify-email', {
+      method: 'POST', body: JSON.stringify({ token }),
+    }).then(({ user }) => {
+      router.replace(user.roles.some(role => ['ADMIN', 'SUPER_ADMIN'].includes(role))
+        ? '/admin' : user.roles.includes('TUTOR') ? '/instructor/courses'
+        : user.roles.includes('INTERPRETER') ? '/interpreter' : '/dashboard');
+      router.refresh();
+    }).catch((caught: unknown) => {
+      setNotice('');
+      setError((caught instanceof Error ? caught.message : 'This verification link could not be used.') + ' Sign in below to request a new email.');
+      setIsSubmitting(false);
+    });
+  }, [router]);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -81,9 +99,9 @@ export default function Login() {
         <aside className="form-aside"><p className="eyebrow">Your learning space</p><h1>{registering ? 'A new language. A new perspective.' : 'Welcome back.'}</h1><p>{registering ? 'Create your account and get ready to build a confident, lasting connection with French.' : 'Sign in to pick up your learning journey and see what’s next.'}</p><p className="form-aside-note">Your account keeps your learning progress, courses, and bookings together.</p></aside>
         <section className="form-card" aria-labelledby="account-title">
           <p className="eyebrow">{registering ? 'Create account' : 'Sign in'}</p>
-          <h2 id="account-title">{registering ? 'Get started with Transligual' : 'Sign in to your account'}</h2>
+          <h2 id="account-title">{registering ? 'Get started with Translingual' : 'Sign in to your account'}</h2>
           <p>{registering ? 'A few details are all you need to begin.' : 'Enter the details you used to create your account.'}</p>
-          <form onSubmit={submit} method="post">
+          <form onSubmit={submit} method="post" aria-busy={isSubmitting}>
             {registering && <div className="form-row"><label>First name<input name="firstName" type="text" autoComplete="given-name" placeholder="Your first name" required /></label><label>Last name<input name="lastName" type="text" autoComplete="family-name" placeholder="Your last name" required /></label></div>}
             <label>Email address<input name="email" type="email" autoComplete="email" placeholder="you@example.com" required /></label>
             <label>Password<input name="password" type="password" autoComplete={registering ? 'new-password' : 'current-password'} minLength={registering ? 12 : 1} placeholder={registering ? 'At least 12 characters' : 'Your password'} required />{registering && <small>Use at least 12 characters.</small>}</label>
@@ -92,7 +110,7 @@ export default function Login() {
             <button className="button" type="submit" disabled={isSubmitting}>{isSubmitting ? 'Please wait…' : registering ? 'Create my account' : 'Sign in'} <span aria-hidden="true">→</span></button>
           </form>
           {!registering && <p className="hint"><Link className="text-link" href="/reset-password">Forgot your password?</Link></p>}
-          <p className="hint">{registering ? 'Already have an account?' : 'New to Transligual?'}{' '}<button className="text-button" type="button" onClick={() => { setMode(registering ? 'login' : 'register'); setError(''); setNotice(''); }}>{registering ? 'Sign in' : 'Create an account'}</button></p>
+          <p className="hint">{registering ? 'Already have an account?' : 'New to Translingual?'}{' '}<button className="text-button" type="button" onClick={() => { setMode(registering ? 'login' : 'register'); setError(''); setNotice(''); }}>{registering ? 'Sign in' : 'Create an account'}</button></p>
         </section>
       </div>
     </main>

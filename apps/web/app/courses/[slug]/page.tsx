@@ -31,7 +31,7 @@ export default async function CourseDetailsPage({ params }: { params: Promise<{ 
   const { slug } = await params;
   const course = await getCourse(slug);
   if (!course) notFound();
-  const tutor = course.tutor?.profile?.displayName || course.tutor?.profile?.firstName || 'Transligual tutor';
+  const tutor = course.tutor?.profile?.displayName || course.tutor?.profile?.firstName || 'Translingual tutor';
   const lessons = course.modules?.reduce((total, module) => total + module.lessons.length, 0) ?? 0;
   const duration = course.estimatedDurationMinutes ? `${Math.round(course.estimatedDurationMinutes / 60)} hours` : 'Self-paced';
 

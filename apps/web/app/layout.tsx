@@ -3,7 +3,7 @@ import './styles.css';
 import AppChrome from './components/app-chrome';
 
 export const metadata: Metadata = {
-  title: { default: 'Transligual | Learn French. Connect globally.', template: '%s | Transligual' },
+  title: { default: 'Translingual | Learn French. Connect globally.', template: '%s | Translingual' },
   description: 'Learn French with expert tutors and access thoughtful translation and interpretation support.',
 };
 

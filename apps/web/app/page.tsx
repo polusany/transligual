@@ -24,12 +24,12 @@ export default async function Home() {
             <p className="eyebrow">Language opens new doors</p>
             <h1>Make French part of <em>your story.</em></h1>
             <p className="hero-lede">Learn with expert tutors, gain confidence step by step, and find the right words wherever life takes you.</p>
-            <div className="hero-actions"><Link className="button" href="/courses">Explore French courses <span aria-hidden="true">↗</span></Link><Link className="button-outline" href="/about">Discover Transligual</Link></div>
+            <div className="hero-actions"><Link className="button" href="/courses">Explore French courses <span aria-hidden="true">↗</span></Link><Link className="button-outline" href="/about">Discover Translingual</Link></div>
             <p className="hero-note">Thoughtful learning. Human expertise. A world of possibility.</p>
           </div>
           <div className="hero-art" aria-label="Illustration inspired by French language and culture" role="img">
             <div className="art-orbit" />
-            <div className="art-core"><div className="art-topline"><span>Transligual</span><span>01 / FR</span></div><span className="art-bigword">Bonjour</span><div className="art-caption"><span>Learn with purpose</span><span>2026</span></div></div>
+            <div className="art-core"><div className="art-topline"><span>Translingual</span><span>01 / FR</span></div><span className="art-bigword">Bonjour</span><div className="art-caption"><span>Learn with purpose</span><span>2026</span></div></div>
             <div className="art-corner one">é</div><div className="art-corner two">à</div>
             <div className="floating-card"><strong>À votre rythme</strong><span>Progress that fits your life</span></div>
           </div>
@@ -50,7 +50,7 @@ export default async function Home() {
         </section>
 
         <section className="section-block" style={{paddingTop:0}}>
-          <div className="section-heading"><div><p className="eyebrow">Why Transligual</p><h2>Human expertise, with a clear path forward.</h2></div></div>
+          <div className="section-heading"><div><p className="eyebrow">Why Translingual</p><h2>Human expertise, with a clear path forward.</h2></div></div>
           <div className="values-grid"><article className="value-card"><span className="value-number">01</span><h3>Learning with structure</h3><p>Follow a focused path with practical lessons, helpful guidance, and progress you can see.</p></article><article className="value-card"><span className="value-number">02</span><h3>People at the centre</h3><p>Learn and work with specialists who understand context, culture, and the value of being heard.</p></article><article className="value-card"><span className="value-number">03</span><h3>Confidence that travels</h3><p>Build language skills you can carry into study, work, travel, and everyday life.</p></article></div>
         </section>
 

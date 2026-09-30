@@ -23,7 +23,7 @@ export async function certificatePdf(input:{name:string;course:string;number:str
   for(const [i,value] of lines.entries()){page.drawText(value,{x:(842-font.widthOfTextAtSize(value,size))/2,y:y-i*(size+7),size,font,color:ink});}
   return y-lines.length*(size+7);
  }
- centered('TRANSLIGUAL',515,17,true);centered('CERTIFICATE OF COMPLETION',455,28,true);
+ centered('TRANSLINGUAL',515,17,true);centered('CERTIFICATE OF COMPLETION',455,28,true);
  centered('This certifies that',405,13);
  centered(input.name,369,25,true,2);
  centered('has completed the required lessons and assessments for',297,12);
@@ -31,6 +31,6 @@ export async function certificatePdf(input:{name:string;course:string;number:str
  centered('Issued '+input.issuedAt.toISOString().slice(0,10)+' | '+input.number,145,11);
  centered('Verification code: '+input.code,113,10);
  centered(new URL(input.verificationUrl).origin+'/certificates/verify',83,9);
- doc.setTitle('Certificate - '+input.course);doc.setAuthor('Transligual');
+ doc.setTitle('Certificate - '+input.course);doc.setAuthor('Translingual');
  return Buffer.from(await doc.save());
 }
