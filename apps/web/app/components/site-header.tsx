@@ -1,4 +1,7 @@
+'use client';
+
 import Link from 'next/link';
+import { useState } from 'react';
 import AccountActions from './account-actions';
 
 export function Brand({ inverse = false }: { inverse?: boolean }) {
@@ -11,15 +14,19 @@ export function Brand({ inverse = false }: { inverse?: boolean }) {
 }
 
 export default function SiteHeader() {
+  const [open, setOpen] = useState(false);
   return (
     <header className="site-header">
       <div className="site-header-inner">
         <Brand />
-        <nav className="site-nav" aria-label="Main navigation">
-          <Link href="/courses">French courses</Link>
-          <Link href="/services/translation">Translation</Link>
-          <Link href="/services/interpretation">Interpretation</Link>
-          <Link href="/about">Our approach</Link>
+        <button className="menu-toggle" type="button" aria-expanded={open} aria-controls="main-navigation" onClick={() => setOpen((value) => !value)}>
+          <span className="sr-only">{open ? 'Close' : 'Open'} menu</span><span aria-hidden="true">☰</span>
+        </button>
+        <nav id="main-navigation" className={`site-nav${open ? ' is-open' : ''}`} aria-label="Main navigation">
+          <Link onClick={() => setOpen(false)} href="/courses">French courses</Link>
+          <Link onClick={() => setOpen(false)} href="/services/translation">Translation</Link>
+          <Link onClick={() => setOpen(false)} href="/services/interpretation">Interpretation</Link>
+          <Link onClick={() => setOpen(false)} href="/about">Our approach</Link>
         </nav>
         <AccountActions />
       </div>
