@@ -24,5 +24,6 @@ RUN corepack enable && corepack prepare pnpm@12.4.2 --activate \
 COPY --from=build --chown=app:app /workspace /app
 RUN mkdir -p /app/uploads && chown app:app /app/uploads
 USER app
+RUN node apps/api/node_modules/prisma/build/index.js --help
 EXPOSE 4000
 CMD ["node", "apps/api/dist/main.js"]

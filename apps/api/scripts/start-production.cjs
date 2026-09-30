@@ -6,7 +6,10 @@ const root = path.resolve(__dirname, '../../..');
 const apiDirectory = path.join(root, 'apps/api');
 process.chdir(apiDirectory);
 // Use the CLI installed in the image; no runtime package-manager download.
-const prismaCli = require.resolve('prisma');
+// Prisma's package root exports types, not the executable. Resolve its bin.
+const prismaPackagePath = require.resolve('prisma/package.json');
+const prismaPackage = require(prismaPackagePath);
+const prismaCli = path.resolve(path.dirname(prismaPackagePath), prismaPackage.bin.prisma);
 const migration = spawnSync(process.execPath, [prismaCli, 'migrate', 'deploy'], {
   cwd: apiDirectory,
   stdio: 'inherit',
