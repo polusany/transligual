@@ -96,3 +96,7 @@ Run proxy regression tests with Node 22.6 or newer: `pnpm --filter @transligual/
 After pulling this release, run `pnpm db:generate` and `pnpm --filter @transligual/api prisma:deploy`, then restart the API and web app. The migration adds nullable text/reply fields and preserves existing requests. Legacy requests without text are visible but require a new text submission. Google Translation keys are no longer needed. Admin replies are delivered in the website request history; no reply email is sent.
 
 Validate the service with `pnpm --filter @transligual/api test:translations`. In two separate signed-in sessions, submit text as a student, reply at `/admin/translations` as an admin, and refresh the student’s request history. Verify a different student cannot access that request and a student cannot access the admin inbox.
+
+### Render startup command
+
+For the API Docker service, set **Docker Command** to `node apps/api/scripts/start-production.cjs`. This applies migrations before starting the API and stops startup if migrations fail. It avoids shell quoting in dashboard command fields. Push this script to the deployed branch before selecting Deploy latest commit.
