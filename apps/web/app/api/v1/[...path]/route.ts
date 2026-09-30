@@ -3,9 +3,9 @@ import type { NextRequest } from 'next/server';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-const API_SERVER_URL = (process.env.API_INTERNAL_URL ?? 'http://localhost:4000/api/v1').replace(/\/$/, '');
+const API_SERVER_URL = (process.env.API_INTERNAL_URL ?? 'http://127.0.0.1:4000/api/v1').replace(/\/$/, '');
 const FORWARDED_REQUEST_HEADERS = ['accept', 'content-type', 'cookie', 'idempotency-key', 'range', 'x-forwarded-for', 'x-paystack-signature'];
-const FORWARDED_RESPONSE_HEADERS = ['accept-ranges', 'content-disposition', 'content-length', 'content-range', 'content-type', 'cache-control', 'etag', 'retry-after', 'set-cookie', 'x-content-type-options'];
+const FORWARDED_RESPONSE_HEADERS = ['accept-ranges', 'content-disposition', 'content-length', 'content-range', 'content-type', 'cache-control', 'etag', 'retry-after', 'location', 'www-authenticate', 'x-content-type-options'];
 
 async function proxy(request: NextRequest, context: { params: Promise<{ path: string[] }> }): Promise<Response> {
   const { path } = await context.params;
@@ -31,13 +31,31 @@ async function proxy(request: NextRequest, context: { params: Promise<{ path: st
     cache: 'no-store',
     redirect: 'manual',
     signal: AbortSignal.timeout(30000),
-  }); } catch { return Response.json({success:false,error:{message:'The service is temporarily unavailable. Please try again shortly.'}},{status:503}); }
+  }); } catch (error) {
+    const cause = error instanceof Error ? error.cause as { code?: string } | undefined : undefined;
+    const timedOut = error instanceof Error && error.name === 'TimeoutError';
+    // Never log request bodies, query strings, cookies, or configured URL credentials.
+    console.error('[api-proxy] Upstream request failed', {
+      method,
+      code: cause?.code ?? (error instanceof Error ? error.name : 'UNKNOWN'),
+    });
+    return Response.json({ success: false, error: {
+      code: timedOut ? 'API_TIMEOUT' : 'API_UNAVAILABLE',
+      message: timedOut
+        ? 'The service took too long to respond. Please try again shortly.'
+        : 'The service is temporarily unavailable. Please try again shortly.',
+    } }, { status: timedOut ? 504 : 503, headers: { 'Cache-Control': 'no-store' } });
+  }
   const responseHeaders = new Headers();
   for (const name of FORWARDED_RESPONSE_HEADERS) {
+    // Fetch decompresses the body, so the compressed length is no longer valid.
+    if (name === 'content-length' && upstream.headers.has('content-encoding')) continue;
     const value = upstream.headers.get(name);
     if (value) responseHeaders.set(name, value);
   }
-  return new Response(upstream.body, { status: upstream.status, headers: responseHeaders });
+  for (const cookie of upstream.headers.getSetCookie()) responseHeaders.append('set-cookie', cookie);
+  const body = method === 'HEAD' || [204, 205, 304].includes(upstream.status) ? null : upstream.body;
+  return new Response(body, { status: upstream.status, headers: responseHeaders });
 }
 
 export const GET = proxy;
@@ -45,3 +63,6 @@ export const POST = proxy;
 export const PUT = proxy;
 export const PATCH = proxy;
 export const DELETE = proxy;
+
+export const HEAD = proxy;
+export const OPTIONS = proxy;

@@ -80,3 +80,13 @@ pnpm build
 ```
 
 Do not commit `.env` files, database credentials, JWT secrets, or payment-provider keys.
+
+## Troubleshooting local service errors
+
+Run `pnpm doctor` (or `node ops/doctor.mjs`) from the repository root to check API, database readiness, and the website proxy. Set `API_INTERNAL_URL` or `WEB_APP_URL` when checking non-default addresses.
+
+The local Compose file starts PostgreSQL only. Keep `pnpm dev` running in a separate Ubuntu terminal to run both the API and website. If the API fails to start, inspect that terminal's error; check `docker compose ps` and run `pnpm --filter @transligual/api prisma:deploy` if migrations are pending. Do not overwrite an existing .env or reset the database to troubleshoot connectivity.
+
+The website defaults to the API's IPv4 loopback address because the API listens on IPv4. For containers, set `API_INTERNAL_URL=http://api:4000/api/v1` as in the production Compose configuration. Proxy connection failures log a safe error code in the Next.js terminal; timeouts return 504 and unreachable services return 503. Restart the web process after changing environment variables.
+
+Run proxy regression tests with Node 22.6 or newer: `pnpm --filter @transligual/web test`.
