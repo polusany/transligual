@@ -21,7 +21,8 @@ if (migration.error || migration.status !== 0) {
 }
 // Explicit opt-in: initialize the deployed admin without changing existing credentials.
 if (process.env.BOOTSTRAP_ADMIN_ON_START === 'true') {
-  const seed = spawnSync(process.execPath, [prismaCli, 'db', 'seed'], {
+  const tsNodeCli = require.resolve('ts-node/dist/bin.js');
+  const seed = spawnSync(process.execPath, [tsNodeCli, path.join(apiDirectory, 'prisma/seed.ts')], {
     cwd: apiDirectory, stdio: 'inherit', env: process.env,
   });
   if (seed.error || seed.status !== 0) {
@@ -30,3 +31,4 @@ if (process.env.BOOTSTRAP_ADMIN_ON_START === 'true') {
   }
 }
 require(path.join(root, 'apps/api/dist/main.js'));
+
