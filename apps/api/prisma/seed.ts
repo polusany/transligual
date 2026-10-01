@@ -12,8 +12,18 @@ async function main() {
 
   const existing = await prisma.user.findUnique({ where: { email }, select: { roles: true } });
   if (existing) {
-    if (!existing.roles.includes(UserRole.SUPER_ADMIN)) throw new Error(`An account already uses ${email}. Choose a new bootstrap email or grant the role through a reviewed admin process.`);
-    console.log(`Super administrator ${email} already exists; credentials were not changed.`);
+    if (!existing.roles.some(role => role === UserRole.SUPER_ADMIN || role === UserRole.ADMIN)) throw new Error('The bootstrap email belongs to a non-admin account. Refusing to promote it automatically.');
+    if (process.env.BOOTSTRAP_ADMIN_RESET_PASSWORD === 'true') {
+      const passwordHash = await argon2.hash(password, { type: argon2.argon2id, memoryCost: 19_456, timeCost: 2, parallelism: 1 });
+      await prisma.$transaction(async (tx) => {
+        await tx.user.update({ where: { email }, data: { passwordHash, status: UserStatus.ACTIVE, emailVerifiedAt: new Date() } });
+        const account = await tx.user.findUniqueOrThrow({ where: { email }, select: { id: true } });
+        await tx.accountToken.updateMany({ where: { userId: account.id, usedAt: null }, data: { usedAt: new Date() } });
+      });
+      console.log('Administrator credentials restored. Remove the bootstrap flags and password from the host settings now.');
+    } else {
+      console.log('Administrator already exists; credentials were not changed.');
+    }
   } else {
     const passwordHash = await argon2.hash(password, { type: argon2.argon2id, memoryCost: 19_456, timeCost: 2, parallelism: 1 });
     await prisma.user.create({

@@ -23,7 +23,19 @@ export default function SiteHeader() {
           <span className="sr-only">{open ? 'Close' : 'Open'} menu</span><span aria-hidden="true">☰</span>
         </button>
         <nav id="main-navigation" className={`site-nav${open ? ' is-open' : ''}`} aria-label="Main navigation">
-          <Link onClick={() => setOpen(false)} href="/courses">French courses</Link>
+          <details className="courses-menu">
+            <summary>Courses</summary>
+            <div className="courses-menu-links" onClick={(event) => { if ((event.target as HTMLElement).closest('a')) { event.currentTarget.closest('details')?.removeAttribute('open'); setOpen(false); } }}>
+              <Link href="/courses">All courses and services</Link>
+              <Link href="/courses#proficiency">Proficiency Courses in French</Link>
+              <Link href="/courses#beginner">3-month Beginner French</Link>
+              <Link href="/courses#intermediate">3-month Intermediate French</Link>
+              <Link href="/courses#advanced">3-month Advanced French</Link>
+              <Link href="/login?mode=register">Registration Form</Link>
+              <Link href="/courses#specialized-tutoring">Specialized Tutoring</Link>
+              <Link href="/courses#research-assistance">Research Assistance</Link>
+            </div>
+          </details>
           <Link onClick={() => setOpen(false)} href="/services/translation">Translation</Link>
           <Link onClick={() => setOpen(false)} href="/services/interpretation">Interpretation</Link>
           <Link onClick={() => setOpen(false)} href="/about">Our approach</Link>

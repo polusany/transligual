@@ -19,4 +19,14 @@ if (migration.error || migration.status !== 0) {
   console.error('Database migrations failed; the API was not started.');
   process.exit(migration.status || 1);
 }
+// Explicit opt-in: initialize the deployed admin without changing existing credentials.
+if (process.env.BOOTSTRAP_ADMIN_ON_START === 'true') {
+  const seed = spawnSync(process.execPath, [prismaCli, 'db', 'seed'], {
+    cwd: apiDirectory, stdio: 'inherit', env: process.env,
+  });
+  if (seed.error || seed.status !== 0) {
+    console.error('Admin bootstrap failed; the API was not started.');
+    process.exit(seed.status || 1);
+  }
+}
 require(path.join(root, 'apps/api/dist/main.js'));
