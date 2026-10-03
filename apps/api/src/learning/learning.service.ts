@@ -3,12 +3,14 @@ import { EnrollmentStatus } from '@prisma/client';
 import { PrismaService } from '../prisma.service';
 import { CertificatesService } from '../certificates/certificates.service';
 import { UpdateProgressDto } from './dto/update-progress.dto';
+import { requireRegistration } from '../enrollments/require-registration';
 
 @Injectable()
 export class LearningService {
   constructor(private readonly prisma: PrismaService, private readonly certificates: CertificatesService) {}
 
   async getCourse(studentId: string, courseId: string) {
+    await requireRegistration(this.prisma, studentId);
     const enrollment = await this.prisma.enrollment.findUnique({ where: { studentId_courseId: { studentId, courseId } }, select: { id: true, status: true } });
     if (!enrollment || (enrollment.status !== EnrollmentStatus.ACTIVE && enrollment.status !== EnrollmentStatus.COMPLETED)) throw new ForbiddenException('An active course enrollment is required to access these lessons.');
     const course = await this.prisma.course.findUnique({
@@ -58,6 +60,7 @@ export class LearningService {
   }
 
   async updateProgress(studentId: string, lessonId: string, input: UpdateProgressDto) {
+    await requireRegistration(this.prisma, studentId);
     const lesson = await this.prisma.lesson.findUnique({ where: { id: lessonId }, select: { id: true, module: { select: { courseId: true } } } });
     if (!lesson) throw new NotFoundException('Lesson not found.');
     const courseId = lesson.module.courseId;

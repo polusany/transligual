@@ -1,14 +1,25 @@
-import type { Metadata } from 'next';
+'use client';
 import Link from 'next/link';
-
-export const metadata: Metadata = { title: 'Our approach' };
-
+import { useState } from 'react';
+import './about.css';
+const services = [
+  { title: 'French proficiency courses', description: 'Build your French with 3-month beginner, intermediate, and advanced programs.', href: '/courses' },
+  { title: 'Learner registration', description: 'Choose your program and share your current French level and learning goals.', href: '/registration' },
+  { title: 'Certificates', description: 'Complete your course and assessments, then view and verify your achievement.', href: '/certificates', featured: true },
+  { title: 'Specialized tutoring', description: 'Explore focused French learning for your individual goals.', href: '/courses#specialized-tutoring' },
+  { title: 'Translation', description: 'Request text translation and follow replies from your account.', href: '/services/translation' },
+  { title: 'Interpretation', description: 'Request language support for meetings, conversations, and appointments.', href: '/services/interpretation' },
+  { title: 'Research assistance', description: 'Explore research support and language assistance for academic work.', href: '/courses#research-assistance' },
+  { title: 'Become a tutor', description: 'Apply to share your language knowledge with Translingual learners.', href: '/teach/apply' },
+  { title: 'Course records', description: 'Print your courses, certificate eligibility, and payment history.', href: '/course-record' },
+];
 export default function AboutPage() {
-  return (
-    <main className="page-shell">
-      <section className="about-hero"><p className="eyebrow">Our approach</p><h1>Language is how we meet the world.</h1><p>Translingual brings French learning and professional language services together around one idea: every person deserves to be understood.</p><div className="hero-actions"><Link className="button" href="/courses">Explore French courses <span aria-hidden="true">↗</span></Link><Link className="button-outline" href="/services/translation">Explore language services</Link></div></section>
-      <section className="about-grid"><div><p className="eyebrow">Learning with purpose</p><h2>Make progress you can carry with you.</h2></div><div><p>Learning a language is personal. It takes practice, patience, and a path that makes sense for your goals. Translingual is being built to make that path clear, with structured learning, expert guidance, and practical ways to use what you learn.</p><p>We are starting with French education and growing toward a connected ecosystem for certification, translation, and interpretation. Each service is designed to respect context, culture, and the people on both sides of every conversation.</p><div className="contact-note">Our platform is growing. Course and service availability may vary while we complete the first release.</div></div></section>
-      <section className="cta-band"><div><h2>Begin with a language you want to speak.</h2><p>Explore the course library and find a starting point that feels right.</p></div><Link className="button" href="/courses">Browse courses <span aria-hidden="true">→</span></Link></section>
-    </main>
-  );
+  const [filter, setFilter] = useState('');
+  const matches = services.filter(service => `${service.title} ${service.description}`.toLowerCase().includes(filter.trim().toLowerCase()));
+  return <main className="about-services"><div className="about-services-inner">
+    <div className="about-services-heading"><div><p className="eyebrow">About Translingual</p><h1>All our services</h1></div><div className="about-services-filter"><label className="sr-only" htmlFor="service-filter">Filter services</label><input id="service-filter" type="search" placeholder="Filter services…" value={filter} onChange={event => setFilter(event.target.value)} /></div></div>
+    <p className="about-services-intro">Translingual brings French education and professional language services together, helping learners build skills and helping people communicate across languages.</p>
+    <div className="about-services-grid">{matches.map(service => <Link key={service.title} href={service.href} className={`about-service-card${service.featured ? ' featured' : ''}`}><h2>{service.title}</h2><p>{service.description}</p><span>Explore <span aria-hidden="true">→</span></span></Link>)}</div>
+    {!matches.length && <p role="status">No services match your search. Try another term.</p>}
+  </div></main>;
 }

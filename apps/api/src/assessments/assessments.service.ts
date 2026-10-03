@@ -3,6 +3,7 @@ import { PrismaService } from '../prisma.service';
 import { CertificatesService } from '../certificates/certificates.service';
 import { AssessmentDto, SubmissionDto } from './dto';
 import { grade, Question } from './grading';
+import { requireRegistration } from '../enrollments/require-registration';
 @Injectable()
 export class AssessmentsService {
  constructor(private readonly prisma:PrismaService, private readonly certificates:CertificatesService) {}
@@ -21,6 +22,7 @@ export class AssessmentsService {
   return rows.map(({questions,...row})=>({...row,questions:row.attempts.length ? (questions as Question[]).map(({correct,...q})=>q) : []}));
  }
  private async enrolled(courseId:string,studentId:string) {
+  await requireRegistration(this.prisma,studentId);
   if(!await this.prisma.enrollment.findFirst({where:{courseId,studentId,status:{in:['ACTIVE','COMPLETED']}}})) throw new ForbiddenException('Enroll in this course to take its assessments.');
  }
  async start(id:string,studentId:string) {

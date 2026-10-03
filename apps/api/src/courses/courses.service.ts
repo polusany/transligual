@@ -4,6 +4,7 @@ import { randomUUID } from 'node:crypto';
 import { mkdir, open, rename, rm } from 'node:fs/promises';
 import { basename, extname, join, resolve, sep } from 'node:path';
 import { PrismaService } from '../prisma.service';
+import { requireRegistration } from '../enrollments/require-registration';
 
 type UploadedLessonFile = { path: string; originalname: string; mimetype: string; size: number };
 const UPLOAD_ROOT = resolve(process.env.UPLOAD_DIR || join(process.cwd(), 'uploads'));
@@ -174,6 +175,7 @@ export class CoursesService {
     const course = material.lesson.module.course;
     const isAdmin = roles.includes('ADMIN') || roles.includes('SUPER_ADMIN');
     if (!isAdmin && course.tutorId !== userId) {
+      await requireRegistration(this.prisma, userId);
       const enrollment = await this.prisma.enrollment.findFirst({ where: { studentId: userId, courseId: course.id, status: { in: ['ACTIVE', 'COMPLETED'] } }, select: { id: true } });
       if (!enrollment || course.status !== CourseStatus.PUBLISHED) throw new ForbiddenException('An active enrollment is required to open this course file.');
     }

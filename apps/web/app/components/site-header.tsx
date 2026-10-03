@@ -31,7 +31,7 @@ export default function SiteHeader() {
               <Link href="/courses#beginner">3-month Beginner French</Link>
               <Link href="/courses#intermediate">3-month Intermediate French</Link>
               <Link href="/courses#advanced">3-month Advanced French</Link>
-              <Link href="/login?mode=register">Registration Form</Link>
+              <Link href="/registration">Registration Form</Link>
               <Link href="/courses#specialized-tutoring">Specialized Tutoring</Link>
               <Link href="/courses#research-assistance">Research Assistance</Link>
             </div>
@@ -39,6 +39,7 @@ export default function SiteHeader() {
           <Link onClick={() => setOpen(false)} href="/services/translation">Translation</Link>
           <Link onClick={() => setOpen(false)} href="/services/interpretation">Interpretation</Link>
           <Link onClick={() => setOpen(false)} href="/about">Our approach</Link>
+          <Link onClick={() => setOpen(false)} href="/teach/apply">Apply as a Tutor</Link>
         </nav>
         <AccountActions />
       </div>

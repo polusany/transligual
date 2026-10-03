@@ -19,7 +19,7 @@ export default function LearningRoomPage() {
   const [notice, setNotice] = useState('');
 
   useEffect(() => {
-    apiRequest<{ id: string }>('/courses/' + encodeURIComponent(slug)).then((course) => apiRequest<LearningData>(`/courses/${course.id}/learn`)).then((result) => { setData(result); setSelected(result.course.modules.flatMap((module) => module.lessons)[0] ?? null); }).catch((caught: unknown) => setError(caught instanceof Error ? caught.message : 'Your course could not be opened.'));
+    apiRequest<unknown>('/learner-registration/me').then(registration => { if (!registration) { window.location.replace('/registration?course=' + encodeURIComponent(slug) + '&learn=1'); throw new Error('Complete your learner registration to continue.'); } return apiRequest<{ id: string }>('/courses/' + encodeURIComponent(slug)); }).then((course) => apiRequest<LearningData>(`/courses/${course.id}/learn`)).then((result) => { setData(result); setSelected(result.course.modules.flatMap((module) => module.lessons)[0] ?? null); }).catch((caught: unknown) => setError(caught instanceof Error ? caught.message : 'Your course could not be opened.'));
   }, [slug]);
 
   async function markComplete(lesson: Lesson) {

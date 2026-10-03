@@ -80,7 +80,9 @@ export default function Login() {
           : user.roles.includes('TUTOR')
             ? '/instructor/courses'
             : '/dashboard';
-        router.push(destination);
+        const next = new URLSearchParams(window.location.search).get('next');
+        const registrationReturn = next === '/registration' || next?.startsWith('/registration?');
+        router.push(user.roles.includes('STUDENT') && registrationReturn ? next! : destination);
       }
     } catch (caught) {
       setError(

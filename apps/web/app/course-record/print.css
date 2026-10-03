@@ -1,0 +1,23 @@
+.course-record { max-width: 1100px; padding-bottom: 48px; }
+.record-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 32px; }
+.course-record section { margin-top: 32px; }
+.record-table-wrap { overflow-x: auto; }
+.course-record table { width: 100%; min-width: 680px; border-collapse: collapse; font-size: 14px; }
+.course-record th, .course-record td { padding: 12px; border: 1px solid #d5dcd7; text-align: left; vertical-align: top; overflow-wrap: anywhere; }
+.course-record th { background: #edf2ee; }
+.course-record td div { margin-top: 8px; }
+.course-record footer { margin-top: 32px; font-size: 12px; }
+@media print {
+  @page { size: A4; margin: 16mm; }
+  .workspace-header, .record-actions { display: none !important; }
+  html, body { background: white !important; color: black !important; }
+  .course-record { max-width: none; width: 100%; margin: 0; padding: 0; }
+  .course-record h1 { font-size: 24pt; }
+  .course-record h2 { font-size: 16pt; }
+  .course-record p, .course-record table { font-size: 10pt; }
+  .record-table-wrap { overflow: visible; }
+  .course-record table { min-width: 0; table-layout: fixed; }
+  .course-record thead { display: table-header-group; }
+  .course-record tr { break-inside: avoid; }
+  .course-record a { color: black; text-decoration: none; }
+}

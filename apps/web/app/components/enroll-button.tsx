@@ -19,6 +19,8 @@ export default function EnrollButton({ courseId, slug, isFree }: { courseId: str
     setBusy(true); setMessage('');
     try {
       await apiRequest('/auth/me');
+      const registration = await apiRequest<unknown>('/learner-registration/me');
+      if (!registration) { router.push(`/registration?course=${encodeURIComponent(slug)}`); return; }
       if (isFree) {
         await apiRequest(`/courses/${courseId}/enroll`, { method: 'POST' });
         setMessage('You’re enrolled. Your course is ready in your learning space.');

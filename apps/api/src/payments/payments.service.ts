@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { PaymentStatus, PaymentItemType } from '@prisma/client';
 import { createHmac, randomUUID, timingSafeEqual } from 'node:crypto';
 import { PrismaService } from '../prisma.service';
+import { requireRegistration } from '../enrollments/require-registration';
 type Transaction = {reference:string;status:string;amount:number|string;currency:string};
 export function providerStatus(status:string):PaymentStatus {
  if(status==='success') return 'SUCCESSFUL';
@@ -15,7 +16,7 @@ export function providerStatus(status:string):PaymentStatus {
 export class PaymentsService {
  constructor(private readonly prisma:PrismaService,private readonly config:ConfigService){}
  private get secretKey(){const value=this.config.get<string>('PAYSTACK_SECRET_KEY');if(!value)throw new ServiceUnavailableException('Checkout is not configured yet.');return value;}
- initializeCourseCheckout(userId:string,id:string){return this.initialize(userId,id,'COURSE');}
+ async initializeCourseCheckout(userId:string,id:string){await requireRegistration(this.prisma,userId);return this.initialize(userId,id,'COURSE');}
  initializeInterpretationCheckout(userId:string,id:string){return this.initialize(userId,id,'INTERPRETATION');}
  private async initialize(userId:string,id:string,type:PaymentItemType) {
   const secret=this.secretKey;
