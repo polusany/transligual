@@ -2,6 +2,7 @@ import { ConflictException, Injectable, NotFoundException } from '@nestjs/common
 import { CourseStatus, EnrollmentStatus } from '@prisma/client';
 import { PrismaService } from '../prisma.service';
 import { LearnerRegistrationDto } from './learner-registration.dto';
+import { assertCourseChoice, assertProgramChange } from './course-choice';
 import { requireRegistration } from './require-registration';
 
 @Injectable()
@@ -30,18 +31,22 @@ export class EnrollmentsService {
     }));
     return { generatedAt: new Date(), learner, courses: records, transactions: payments.map(payment => ({ ...payment, amountMinor: payment.amountMinor.toString(), items: payment.items.map(item => ({ ...item, amountMinor: item.amountMinor.toString() })) })) };
   }
-  saveRegistration(userId: string, input: LearnerRegistrationDto) {
+  async saveRegistration(userId: string, input: LearnerRegistrationDto) {
     const data = { fullName: input.fullName, phone: input.phone, program: input.program, frenchLevel: input.frenchLevel, goals: input.goals };
-    return this.prisma.learnerRegistration.upsert({ where: { userId }, create: { userId, ...data }, update: data });
+    return this.prisma.$transaction(async tx => {
+      await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${userId + ':course-choice'}))`;
+      const existing = await tx.learnerRegistration.findUnique({ where: { userId } });
+      if (existing && existing.program !== input.program) await assertProgramChange(tx, userId, existing.program);
+      return tx.learnerRegistration.upsert({ where: { userId }, create: { userId, ...data }, update: data });
+    });
   }
-
   async listMine(studentId: string) {
     const enrollments = await this.prisma.enrollment.findMany({
       where: { studentId, status: { in: [EnrollmentStatus.ACTIVE, EnrollmentStatus.COMPLETED] } },
       orderBy: { enrolledAt: 'desc' },
       select: {
         id: true, status: true, enrolledAt: true, completedAt: true,
-        course: { select: { id: true, slug: true, title: true, shortDescription: true, level: true } },
+        course: { select: { id: true, slug: true, title: true, shortDescription: true, program: true, level: true } },
       },
     });
     const progress = await this.prisma.courseProgress.findMany({
@@ -54,12 +59,16 @@ export class EnrollmentsService {
 
   async enrollFreeCourse(studentId: string, courseId: string) {
     await requireRegistration(this.prisma, studentId);
-    const course = await this.prisma.course.findUnique({ where: { id: courseId }, select: { id: true, status: true, priceMinor: true } });
+    return this.prisma.$transaction(async tx => {
+      await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${studentId + ':course-choice'}))`;
+    const course = await tx.course.findUnique({ where: { id: courseId }, select: { id: true, status: true, priceMinor: true } });
     if (!course || course.status !== CourseStatus.PUBLISHED) throw new NotFoundException('Course not found.');
     if (course.priceMinor > 0n) throw new ConflictException('Checkout is not available for this course yet.');
-    const existing = await this.prisma.enrollment.findUnique({ where: { studentId_courseId: { studentId, courseId } } });
+    const existing = await tx.enrollment.findUnique({ where: { studentId_courseId: { studentId, courseId } } });
     if (existing && (existing.status === EnrollmentStatus.ACTIVE || existing.status === EnrollmentStatus.COMPLETED)) return existing;
-    if (existing) return this.prisma.enrollment.update({ where: { id: existing.id }, data: { status: EnrollmentStatus.ACTIVE, enrolledAt: new Date(), completedAt: null } });
-    return this.prisma.enrollment.create({ data: { studentId, courseId, status: EnrollmentStatus.ACTIVE } });
+    await assertCourseChoice(tx, studentId, courseId);
+    if (existing) return tx.enrollment.update({ where: { id: existing.id }, data: { status: EnrollmentStatus.ACTIVE, enrolledAt: new Date(), completedAt: null } });
+    return tx.enrollment.create({ data: { studentId, courseId, status: EnrollmentStatus.ACTIVE } });
+    });
   }
 }

@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { PaymentStatus, PaymentItemType } from '@prisma/client';
 import { createHmac, randomUUID, timingSafeEqual } from 'node:crypto';
 import { PrismaService } from '../prisma.service';
+import { assertCourseChoice } from '../enrollments/course-choice';
 import { requireRegistration } from '../enrollments/require-registration';
 type Transaction = {reference:string;status:string;amount:number|string;currency:string};
 export function providerStatus(status:string):PaymentStatus {
@@ -24,12 +25,14 @@ export class PaymentsService {
   if(user?.status!=='ACTIVE') throw new ConflictException('An active account is required.');
   const payment=await this.prisma.$transaction(async tx=>{
    await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${userId+':'+type+':'+id}))`;
+   if(type==='COURSE')await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${userId+':course-choice'}))`;
    if(type==='INTERPRETATION')await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${'booking:'+id}))`;
    let amount:bigint;let currency:string;let title:string;
    if(type==='COURSE') {
     const course=await tx.course.findUnique({where:{id}});
     if(!course||course.status!=='PUBLISHED'||course.priceMinor<=0n)throw new ConflictException('Choose a published paid course.');
     if(await tx.enrollment.findFirst({where:{studentId:userId,courseId:id,status:{in:['ACTIVE','COMPLETED']}}}))throw new ConflictException('You already have course access.');
+    await assertCourseChoice(tx,userId,id);
     amount=course.priceMinor;currency=course.currency;title=course.title;
    } else {
     const booking=await tx.interpretationBooking.findFirst({where:{id,customerId:userId}});
@@ -54,7 +57,7 @@ export class PaymentsService {
   }catch {
    await this.prisma.$transaction(async tx=>{
     await tx.payment.updateMany({where:{id:payment.id,status:{in:['PENDING','PROCESSING']}},data:{status:'FAILED'}});
-    if(type==='INTERPRETATION')await tx.interpretationBooking.updateMany({where:{id,status:'PAYMENT_PENDING'},data:{status:'QUOTED'}});
+   if(type==='INTERPRETATION')await tx.interpretationBooking.updateMany({where:{id,status:'PAYMENT_PENDING'},data:{status:'QUOTED'}});
    });
    throw new ServiceUnavailableException('Checkout could not be started. Please try again.');
   }
@@ -86,9 +89,10 @@ export class PaymentsService {
    let enrollmentId:string|null=null;
    if(status==='SUCCESSFUL') {
     if(item.itemType==='COURSE') {
+     await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${payment.userId+':course-choice'}))`;
      const existing=await tx.enrollment.findUnique({where:{studentId_courseId:{studentId:payment.userId,courseId:item.referenceId}}});
      if(existing&&['ACTIVE','COMPLETED'].includes(existing.status))enrollmentId=existing.id;
-     else {const enrollment=await tx.enrollment.upsert({where:{studentId_courseId:{studentId:payment.userId,courseId:item.referenceId}},create:{studentId:payment.userId,courseId:item.referenceId,paymentId:payment.id,status:'ACTIVE'},update:{paymentId:payment.id,status:'ACTIVE',completedAt:null}});enrollmentId=enrollment.id;}
+     else {await assertCourseChoice(tx,payment.userId,item.referenceId,payment.id);const enrollment=await tx.enrollment.upsert({where:{studentId_courseId:{studentId:payment.userId,courseId:item.referenceId}},create:{studentId:payment.userId,courseId:item.referenceId,paymentId:payment.id,status:'ACTIVE'},update:{paymentId:payment.id,status:'ACTIVE',completedAt:null}});enrollmentId=enrollment.id;}
     } else {
      const booking=await tx.interpretationBooking.findUnique({where:{id:item.referenceId}});
      if(!booking||booking.customerId!==payment.userId||booking.quotedAmountMinor!==payment.amountMinor||booking.currency!==payment.currency||!['QUOTED','PAYMENT_PENDING'].includes(booking.status))throw new ConflictException('The booking changed; staff must review this payment.');

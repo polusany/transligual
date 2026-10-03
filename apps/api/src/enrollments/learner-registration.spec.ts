@@ -16,7 +16,8 @@ describe('learner registration', () => {
     expect((await validate(plainToInstance(LearnerRegistrationDto, { ...input, ...invalid }))).length).toBeGreaterThan(0);
   });
   it('saves against the authenticated user and never a supplied user id', async () => {
-    const prisma = { learnerRegistration: { upsert: jest.fn() } };
+    const prisma: any = { learnerRegistration: { findUnique: jest.fn().mockResolvedValue(null), upsert: jest.fn() }, $executeRaw: jest.fn() };
+    prisma.$transaction = (callback: any) => callback(prisma);
     await new EnrollmentsService(prisma as any).saveRegistration('owner', { ...input, userId: 'other' } as any);
     expect(prisma.learnerRegistration.upsert).toHaveBeenCalledWith(expect.objectContaining({ where: { userId: 'owner' }, create: expect.objectContaining({ userId: 'owner' }) }));
     expect(prisma.learnerRegistration.upsert.mock.calls[0][0].update).not.toHaveProperty('userId');
@@ -32,6 +33,8 @@ describe('learner registration', () => {
   });
   it('allows a registered learner to enroll but still requires an available course', async () => {
     const prisma = { learnerRegistration: { findUnique: jest.fn().mockResolvedValue({ userId: 'u' }) }, course: { findUnique: jest.fn().mockResolvedValue({ id: 'c', status: 'PUBLISHED', priceMinor: 0n }) }, enrollment: { findUnique: jest.fn().mockResolvedValue(null), create: jest.fn().mockResolvedValue({ id: 'e' }) } };
+    Object.assign(prisma, { $executeRaw: jest.fn(), $transaction: (callback: any) => callback(prisma), payment: { findFirst: jest.fn().mockResolvedValue(null) }, assessment: { count: jest.fn().mockResolvedValue(0) } });
+    Object.assign(prisma.enrollment, { findFirst: jest.fn().mockResolvedValue(null) });
     expect(await new EnrollmentsService(prisma as any).enrollFreeCourse('u', 'c')).toEqual({ id: 'e' });
     prisma.course.findUnique.mockResolvedValue(null as any);
     await expect(new EnrollmentsService(prisma as any).enrollFreeCourse('u', 'missing')).rejects.toThrow('Course not found');
