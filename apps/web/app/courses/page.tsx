@@ -25,8 +25,8 @@ export default async function CoursesPage() {
       <nav className="catalog-filters" aria-label="Course categories">
         <a className="filter-chip" href="#proficiency">Proficiency Courses in French</a>
         <a className="filter-chip" href="/registration">Registration Form</a>
-        <a className="filter-chip" href="#specialized-tutoring">Specialized Tutoring</a>
-        <a className="filter-chip" href="#research-assistance">Research Assistance</a>
+        <a className="filter-chip" href="/specialized-tutoring">Specialized Tutoring</a>
+        <a className="filter-chip" href="/research-assistance">Research Assistance</a>
       </nav>
       <section className="course-category-section" id="proficiency">
         <p className="eyebrow">01 / Proficiency Courses in French</p>
@@ -36,25 +36,14 @@ export default async function CoursesPage() {
             ['beginner', 'Beginner', 'Build your foundation with pronunciation, everyday vocabulary, simple grammar, and practical conversations.'],
             ['intermediate', 'Intermediate', 'Develop your fluency with richer conversations, reading, writing, and grammar in context.'],
             ['advanced', 'Advanced', 'Refine your expression through complex texts, extended discussion, and precise written French.'],
-          ].map(([id, name, description]) => <article className="course-program" id={id} key={id}><p className="eyebrow">3-month program</p><h3>3-month {name} French</h3><p>{description}</p><a className="text-link" href={`/programs/${id}`}>View program courses →</a><a className="button-outline" href={`/registration?program=${id}`}>Registration Form</a></article>)}
+          ].map(([id, name, description]) => <article className="course-program" id={id} key={id}><p className="eyebrow">3-month program</p><h3>3-month {name} French</h3><p>{description}</p><a className="button-outline" href={`/registration?program=${id}`}>Registration Form</a></article>)}
         </div>
         <h3>Available course lessons</h3>
         <CourseCatalog courses={result.courses} error={result.error} />
       </section>
       <section className="cta-band course-category-section" id="registration"><div><p className="eyebrow">02 / Registration Form</p><h2>Start your learning journey.</h2><p>Complete your learner details before starting a course.</p></div><a className="button" href="/registration">Open registration form</a></section>
-      <section className="course-category-section" id="specialized-tutoring"><p className="eyebrow">03 / Specialized Tutoring</p><h2>French support focused on your goals.</h2><div className="course-program-grid">{[
-        ['Conversation and pronunciation', 'Build speaking confidence with guided conversation and pronunciation practice.'],
-        ['Exam and academic preparation', 'Strengthen comprehension, grammar, and writing with focused study support.'],
-        ['Professional French', 'Practice French for workplace communication, presentations, and professional correspondence.'],
-      ].map(([title, description]) => <article className="course-program" key={title}><h3>{title}</h3><p>{description}</p></article>)}</div></section>
-      <section className="course-category-section" id="research-assistance"><p className="eyebrow">04 / Research Assistance</p><h2>Guidance at every stage of your research.</h2><div className="course-program-grid">{[
-        ['Topic and proposal guidance', 'Refine your research question, objectives, scope, and proposal structure.'],
-        ['Literature review support', 'Find relevant sources, evaluate evidence, and organize your literature review.'],
-        ['Research methodology', 'Get guidance on research design, sampling, and data collection methods.'],
-        ['Data analysis support', 'Understand analysis methods and present and interpret your findings.'],
-        ['Academic editing and referencing', 'Improve clarity, structure, citations, and reference-list consistency.'],
-        ['French-language research support', 'Get help understanding French sources and communicating research across languages.'],
-      ].map(([title, description]) => <article className="course-program" key={title}><h3>{title}</h3><p>{description}</p></article>)}</div></section>
+
+
       <section className="cta-band"><div><h2>Not sure where to begin?</h2><p>Start with the level that feels right. You can build from there.</p></div><a className="button-outline" href="/about">Explore our approach <span aria-hidden="true">→</span></a></section>
     </main>
   );

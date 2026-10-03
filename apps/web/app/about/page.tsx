@@ -6,10 +6,10 @@ const services = [
   { title: 'French proficiency courses', description: 'Build your French with 3-month beginner, intermediate, and advanced programs.', href: '/courses' },
   { title: 'Learner registration', description: 'Choose your program and share your current French level and learning goals.', href: '/registration' },
   { title: 'Certificates', description: 'Complete your course and assessments, then view and verify your achievement.', href: '/certificates', featured: true },
-  { title: 'Specialized tutoring', description: 'Explore focused French learning for your individual goals.', href: '/courses#specialized-tutoring' },
+  { title: 'Specialized tutoring', description: 'Explore focused French learning for your individual goals.', href: '/specialized-tutoring' },
   { title: 'Translation', description: 'Request text translation and follow replies from your account.', href: '/services/translation' },
   { title: 'Interpretation', description: 'Request language support for meetings, conversations, and appointments.', href: '/services/interpretation' },
-  { title: 'Research assistance', description: 'Explore research support and language assistance for academic work.', href: '/courses#research-assistance' },
+  { title: 'Research assistance', description: 'Explore research support and language assistance for academic work.', href: '/research-assistance' },
   { title: 'Become a tutor', description: 'Apply to share your language knowledge with Translingual learners.', href: '/teach/apply' },
   { title: 'Course records', description: 'Print your courses, certificate eligibility, and payment history.', href: '/course-record' },
 ];

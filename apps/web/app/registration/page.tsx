@@ -36,7 +36,7 @@ export default function RegistrationPage() {
   function update(key: keyof Registration, value: string) { setForm(previous => ({ ...previous, [key]: value })); setSaved(false); }
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault(); setBusy(true); setError('');
-    try { await apiRequest('/learner-registration/me', { method: 'POST', body: JSON.stringify(form) }); setSaved(true); router.push(['beginner', 'intermediate', 'advanced'].includes(form.program) ? '/programs/' + form.program : next); }
+    try { await apiRequest('/learner-registration/me', { method: 'POST', body: JSON.stringify(form) }); setSaved(true); router.push(['beginner', 'intermediate', 'advanced'].includes(form.program) ? '/programs/' + form.program : ['specialized-tutoring', 'research-assistance'].includes(form.program) ? '/' + form.program : next); }
     catch (caught) { setError(caught instanceof Error ? caught.message : 'Registration could not be submitted. Please try again.'); }
     finally { setBusy(false); }
   }
