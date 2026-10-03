@@ -28,9 +28,9 @@ export default function SiteHeader() {
             <div className="courses-menu-links" onClick={(event) => { if ((event.target as HTMLElement).closest('a')) { event.currentTarget.closest('details')?.removeAttribute('open'); setOpen(false); } }}>
               <Link href="/courses">All courses and services</Link>
               <Link href="/courses#proficiency">Proficiency Courses in French</Link>
-              <Link href="/courses#beginner">3-month Beginner French</Link>
-              <Link href="/courses#intermediate">3-month Intermediate French</Link>
-              <Link href="/courses#advanced">3-month Advanced French</Link>
+              <Link href="/programs/beginner">3-month Beginner French</Link>
+              <Link href="/programs/intermediate">3-month Intermediate French</Link>
+              <Link href="/programs/advanced">3-month Advanced French</Link>
               <Link href="/registration">Registration Form</Link>
               <Link href="/courses#specialized-tutoring">Specialized Tutoring</Link>
               <Link href="/courses#research-assistance">Research Assistance</Link>

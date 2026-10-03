@@ -22,6 +22,12 @@ export class CoursesService {
     private readonly prisma: PrismaService,
   ) {}
 
+  async assignProgram(courseId: string, program: string) {
+    const course = await this.prisma.course.findUnique({ where: { id: courseId }, select: { id: true } });
+    if (!course) throw new NotFoundException('Course not found.');
+    return serializeCourse(await this.prisma.course.update({ where: { id: courseId }, data: { program: program || null } }));
+  }
+
   async findCategories() {
     return this.prisma.category.findMany({ where: { isActive: true }, orderBy: { name: 'asc' }, select: { id: true, name: true, slug: true, description: true } });
   }
@@ -31,7 +37,7 @@ export class CoursesService {
     const courses = await this.prisma.course.findMany({
       where: isAdmin ? {} : { tutorId: userId },
       orderBy: { updatedAt: 'desc' },
-      select: { id: true, slug: true, title: true, shortDescription: true, level: true, priceMinor: true, currency: true, status: true, updatedAt: true, _count: { select: { modules: true } } },
+      select: { id: true, slug: true, title: true, shortDescription: true, program: true, level: true, priceMinor: true, currency: true, status: true, updatedAt: true, _count: { select: { modules: true } } },
     });
     return courses.map(serializeCourse);
   }
@@ -203,7 +209,7 @@ export class CoursesService {
     const courses = await this.prisma.course.findMany({
       where: { status: { in: [CourseStatus.SUBMITTED, CourseStatus.UNDER_REVIEW, CourseStatus.APPROVED] } },
       orderBy: { submittedAt: 'asc' },
-      select: { id: true, slug: true, title: true, shortDescription: true, description: true, level: true, priceMinor: true, currency: true, status: true, submittedAt: true, tutor: { select: { email: true, profile: { select: { firstName: true, lastName: true } } } }, category: { select: { name: true } } },
+      select: { id: true, slug: true, title: true, shortDescription: true, description: true, program: true, level: true, priceMinor: true, currency: true, status: true, submittedAt: true, tutor: { select: { email: true, profile: { select: { firstName: true, lastName: true } } } }, category: { select: { name: true } } },
     });
     return courses.map(serializeCourse);
   }
@@ -230,7 +236,7 @@ export class CoursesService {
       orderBy: [{ publishedAt: 'desc' }, { createdAt: 'desc' }],
       select: {
         id: true, slug: true, title: true, shortDescription: true, description: true,
-        level: true, priceMinor: true, currency: true, status: true,
+        program: true, level: true, priceMinor: true, currency: true, status: true,
         legacyLanguage: true, legacyThumbnail: true, estimatedDurationMinutes: true,
         certificateEnabled: true, publishedAt: true,
         category: { select: { name: true, slug: true } },
@@ -267,6 +273,7 @@ export class CoursesService {
     shortDescription: string;
     description: string;
     categoryId: string;
+    program?: string;
     level: CourseLevel;
     priceMinor: string;
     currency: string;
@@ -288,6 +295,7 @@ export class CoursesService {
         description: data.description.trim(),
         shortDescription: data.shortDescription.trim(),
         slug,
+        program: data.program || null,
         level: data.level ?? CourseLevel.BEGINNER,
         tutorId: userId,
         categoryId: category.id,

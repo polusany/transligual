@@ -6,6 +6,7 @@ export type CourseSummary = {
   title: string;
   shortDescription?: string | null;
   description?: string | null;
+  program?: string | null;
   level: string;
   priceMinor: string | number;
   currency: string;

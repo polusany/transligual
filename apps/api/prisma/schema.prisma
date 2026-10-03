@@ -372,6 +372,7 @@ model Course {
   slug                     String       @unique
   shortDescription         String
   description              String
+  program                  String?
   level                    CourseLevel
   priceMinor               BigInt       @default(0)
   currency                 String       @default("NGN")
@@ -397,6 +398,7 @@ model Course {
 
   @@index([tutorId, status])
   @@index([categoryId, status])
+  @@index([program, status])
   @@index([status, publishedAt])
 }
 

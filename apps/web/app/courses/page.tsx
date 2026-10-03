@@ -36,7 +36,7 @@ export default async function CoursesPage() {
             ['beginner', 'Beginner', 'Build your foundation with pronunciation, everyday vocabulary, simple grammar, and practical conversations.'],
             ['intermediate', 'Intermediate', 'Develop your fluency with richer conversations, reading, writing, and grammar in context.'],
             ['advanced', 'Advanced', 'Refine your expression through complex texts, extended discussion, and precise written French.'],
-          ].map(([id, name, description]) => <article className="course-program" id={id} key={id}><p className="eyebrow">3-month program</p><h3>3-month {name} French</h3><p>{description}</p><a className="button-outline" href={`/registration?program=${id}`}>Registration Form</a></article>)}
+          ].map(([id, name, description]) => <article className="course-program" id={id} key={id}><p className="eyebrow">3-month program</p><h3>3-month {name} French</h3><p>{description}</p><a className="text-link" href={`/programs/${id}`}>View program courses →</a><a className="button-outline" href={`/registration?program=${id}`}>Registration Form</a></article>)}
         </div>
         <h3>Available course lessons</h3>
         <CourseCatalog courses={result.courses} error={result.error} />

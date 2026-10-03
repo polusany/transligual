@@ -3,6 +3,7 @@ import { UserRole } from '@prisma/client';
 import { AuthenticatedRequest, JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { Roles } from '../auth/roles.decorator';
 import { RolesGuard } from '../auth/roles.guard';
+import { AssignProgramDto } from './dto/assign-program.dto';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { CoursesService } from './courses.service';
 
@@ -41,6 +42,13 @@ export class CoursesController {
   @Roles(UserRole.TUTOR, UserRole.ADMIN, UserRole.SUPER_ADMIN)
   create(@Body() body: CreateCourseDto, @Req() request: AuthenticatedRequest) {
     return this.coursesService.create(body, request.user.sub, request.user.roles);
+  }
+
+  @Post(':id/program')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN)
+  assignProgram(@Param('id') id: string, @Body() body: AssignProgramDto) {
+    return this.coursesService.assignProgram(id, body.program);
   }
 
   @Post(':id/submit')

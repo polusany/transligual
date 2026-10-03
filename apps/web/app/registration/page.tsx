@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { FormEvent, useEffect, useState } from 'react';
 import { apiRequest, CurrentUser } from '../lib/api';
 
@@ -8,6 +9,7 @@ type Registration = { fullName: string; phone: string; program: string; frenchLe
 const programs = [ ['beginner', '3-month Beginner French'], ['intermediate', '3-month Intermediate French'], ['advanced', '3-month Advanced French'], ['specialized-tutoring', 'Specialized Tutoring'], ['research-assistance', 'Research Assistance'] ];
 
 export default function RegistrationPage() {
+  const router = useRouter();
   const [user, setUser] = useState<CurrentUser | null>(null);
   const [form, setForm] = useState<Registration>({ fullName: '', phone: '', program: '', frenchLevel: '', goals: '' });
   const [loading, setLoading] = useState(true);
@@ -26,14 +28,15 @@ export default function RegistrationPage() {
       setUser(account);
       if (!account.roles.includes('STUDENT')) return;
       const existing = await apiRequest<Registration | null>('/learner-registration/me');
-      setForm(existing ?? { fullName: [account.profile?.firstName, account.profile?.lastName].filter(Boolean).join(' '), phone: '', program: programs.some(([value]) => value === params.get('program')) ? params.get('program')! : '', frenchLevel: '', goals: '' });
+      const selectedProgram = programs.some(([value]) => value === params.get('program')) ? params.get('program')! : '';
+      setForm(existing ? { ...existing, program: selectedProgram || existing.program } : { fullName: [account.profile?.firstName, account.profile?.lastName].filter(Boolean).join(' '), phone: '', program: programs.some(([value]) => value === params.get('program')) ? params.get('program')! : '', frenchLevel: '', goals: '' });
     }).catch(caught => setError(caught instanceof Error ? caught.message : 'Unable to load registration.')).finally(() => setLoading(false));
   }, []);
 
   function update(key: keyof Registration, value: string) { setForm(previous => ({ ...previous, [key]: value })); setSaved(false); }
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault(); setBusy(true); setError('');
-    try { await apiRequest('/learner-registration/me', { method: 'POST', body: JSON.stringify(form) }); setSaved(true); }
+    try { await apiRequest('/learner-registration/me', { method: 'POST', body: JSON.stringify(form) }); setSaved(true); router.push(['beginner', 'intermediate', 'advanced'].includes(form.program) ? '/programs/' + form.program : next); }
     catch (caught) { setError(caught instanceof Error ? caught.message : 'Registration could not be submitted. Please try again.'); }
     finally { setBusy(false); }
   }

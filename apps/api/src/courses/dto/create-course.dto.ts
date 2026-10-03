@@ -1,7 +1,10 @@
 import { CourseLevel } from '@prisma/client';
-import { IsBoolean, IsEnum, IsOptional, IsString, IsUUID, Matches, MaxLength, MinLength } from 'class-validator';
+import { IsBoolean, IsEnum, IsIn, IsOptional, IsString, IsUUID, Matches, MaxLength, MinLength } from 'class-validator';
 
 export class CreateCourseDto {
+  @IsOptional() @IsIn(['beginner', 'intermediate', 'advanced'])
+  program?: string;
+
   @IsString() @MinLength(3) @MaxLength(140)
   title!: string;
 
