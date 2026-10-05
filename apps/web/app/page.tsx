@@ -24,7 +24,7 @@ export default async function Home() {
             <p className="eyebrow">Language opens new doors</p>
             <h1>Make French part of <em>your story.</em></h1>
             <p className="hero-lede">Learn with expert tutors, gain confidence step by step, and find the right words wherever life takes you.</p>
-            <div className="hero-actions"><Link className="button" href="/courses">Explore French courses <span aria-hidden="true">↗</span></Link><Link className="button-outline" href="/about">Discover Translingual</Link></div>
+            <div className="hero-actions"><Link className="button" href="/courses">Choose your French program <span aria-hidden="true">↗</span></Link><Link className="button-outline" href="/about">Discover Translingual</Link></div>
             <p className="hero-note">Thoughtful learning. Human expertise. A world of possibility.</p>
           </div>
           <div className="hero-art" aria-label="Illustration inspired by French language and culture" role="img">
@@ -36,6 +36,16 @@ export default async function Home() {
         </section>
         <div className="trust-strip"><div className="trust-item"><span className="trust-dot"/>Expert-led French learning</div><div className="trust-item"><span className="trust-dot"/>Clear paths from first words to fluency</div><div className="trust-item"><span className="trust-dot"/>Translation and interpretation expertise</div></div>
 
+        <section className="section-block" aria-labelledby="program-heading">
+          <div className="section-heading"><div><p className="eyebrow">Your next chapter</p><h2 id="program-heading">Three months.<br/>A world of possibility.</h2></div><p>Choose your starting point, register, and build your French one course at a time.</p></div>
+          <div className="course-program-grid">
+            {[
+              { id: 'beginner', title: 'Start with Bonjour.', level: 'Beginner French', description: 'Your first words, everyday conversations, and a confident foundation.' },
+              { id: 'intermediate', title: 'Find your flow.', level: 'Intermediate French', description: 'Express your ideas, deepen your vocabulary, and speak with greater ease.' },
+              { id: 'advanced', title: 'Make it your own.', level: 'Advanced French', description: 'Refine your voice through rich discussion, complex texts, and precise expression.' },
+            ].map((program, index) => <article className="course-program" key={program.id}><span className="program-number" aria-hidden="true">0{index + 1}</span><p className="eyebrow">3-month · {program.level}</p><h3>{program.title}</h3><p>{program.description}</p><Link className="button-outline" href={`/registration?program=${program.id}`}>Registration form <span aria-hidden="true">→</span></Link></article>)}
+          </div>
+        </section>
         <section className="section-block">
           <div className="section-heading"><div><p className="eyebrow">Start learning</p><h2>Build your French, one confident step at a time.</h2></div><Link className="text-link" href="/courses">Browse all courses <span aria-hidden="true">→</span></Link></div>
           {courses.length ? <div className="course-grid">{courses.map((course, index) => <CourseCard key={course.id} course={course} index={index}/>)}</div> : <div className="empty-state"><h2>Your next chapter starts here.</h2><p>Our course catalogue is being prepared. Explore the learning path and check back soon for published courses.</p><Link className="button" href="/courses">Visit the course library</Link></div>}

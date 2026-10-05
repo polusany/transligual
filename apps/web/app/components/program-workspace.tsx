@@ -28,7 +28,7 @@ export default function ProgramWorkspace({ program }: { program: string }) {
           apiRequest<Enrollment[]>('/enrollments/me'),
           apiRequest<InterpretationBooking[]>('/interpretation/bookings/me').catch(() => { setBookingError('Booking updates could not be loaded. Open booking management to try again.'); return []; }),
         ]);
-        setCourses(enrollments.filter(enrollment => enrollment.course.program === program)); setBookings(interpretationBookings);
+        setCourses(enrollments.filter(enrollment => enrollment.course.program === program && ['ACTIVE', 'COMPLETED'].includes(enrollment.status))); setBookings(interpretationBookings);
       })
       .catch((caught: unknown) => { setError(caught instanceof Error ? caught.message : 'Unable to load your learning space.'); })
       .finally(() => setLoading(false));

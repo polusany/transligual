@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import './styles.css';
+import './theme.css';
 import AppChrome from './components/app-chrome';
 
 export const metadata: Metadata = {

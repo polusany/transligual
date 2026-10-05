@@ -16,3 +16,9 @@
 @media (max-width: 900px) { .about-services-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 600px) { .about-services { padding: 36px 20px 56px; } .about-services-heading { align-items: stretch; flex-direction: column; gap: 24px; } .about-services-grid { grid-template-columns: 1fr; gap: 20px; } .about-services-intro { margin: 32px 0; font-size: 18px; } }
 .about-services .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+.about-services{background:transparent;color:var(--ink)}
+.about-services-filter input{background:#0d1a2d;border-color:var(--line);color:var(--ink)}
+.about-service-card,.about-service-card.featured{background:var(--surface);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow)}
+.about-service-card p{color:var(--ink-soft)}
+.about-service-card>span{color:var(--gold)}
+.about-service-card:hover{background:#22344e;border-color:#b89459}
