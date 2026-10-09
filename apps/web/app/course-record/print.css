@@ -1,23 +1,3 @@
-.course-record { max-width: 1100px; padding-bottom: 48px; }
-.record-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 32px; }
-.course-record section { margin-top: 32px; }
-.record-table-wrap { overflow-x: auto; }
-.course-record table { width: 100%; min-width: 680px; border-collapse: collapse; font-size: 14px; }
-.course-record th, .course-record td { padding: 12px; border: 1px solid #d5dcd7; text-align: left; vertical-align: top; overflow-wrap: anywhere; }
-.course-record th { background: #edf2ee; }
-.course-record td div { margin-top: 8px; }
-.course-record footer { margin-top: 32px; font-size: 12px; }
-@media print {
-  @page { size: A4; margin: 16mm; }
-  .workspace-header, .record-actions { display: none !important; }
-  html, body { background: white !important; color: black !important; }
-  .course-record { max-width: none; width: 100%; margin: 0; padding: 0; }
-  .course-record h1 { font-size: 24pt; }
-  .course-record h2 { font-size: 16pt; }
-  .course-record p, .course-record table { font-size: 10pt; }
-  .record-table-wrap { overflow: visible; }
-  .course-record table { min-width: 0; table-layout: fixed; }
-  .course-record thead { display: table-header-group; }
-  .course-record tr { break-inside: avoid; }
-  .course-record a { color: black; text-decoration: none; }
-}
+.course-record{max-width:1100px;padding-top:32px;padding-bottom:48px}.record-actions,.record-shortcuts{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:24px}.portal-record{background:#fff;color:#172334;border:1px solid #c7cdd4;border-radius:12px;padding:40px;box-shadow:0 12px 40px #0002}.portal-record-heading{display:flex;justify-content:center;align-items:center;gap:20px;text-align:center;border-bottom:3px double #172334;padding-bottom:20px}.portal-record-heading h1{font:800 28px/1.3 sans-serif;letter-spacing:3px;color:#172334;margin:0}.portal-record-heading h2{font:700 20px/1.4 sans-serif;text-transform:uppercase;margin:12px 0 0;color:#172334}.portal-record p{color:#334155}.record-brand-mark{display:grid;place-items:center;border:2px solid #172334;border-radius:12px;width:64px;height:64px;font:800 34px sans-serif}.record-biodata{display:grid;grid-template-columns:1fr 120px;gap:24px;padding:24px 0}.record-biodata dl{margin:0}.record-biodata dl>div{display:grid;grid-template-columns:160px 1fr;gap:12px;margin:0 0 10px}.record-biodata dt{font-weight:700}.record-biodata dd{margin:0;overflow-wrap:anywhere}.record-passport{width:120px;height:150px;border:1px solid #64748b;display:grid;place-items:center;text-align:center;font-size:12px;color:#64748b}.record-passport img{width:100%;height:100%;object-fit:cover}.portal-record section h3{font:700 17px/1.4 sans-serif;text-transform:uppercase;margin:24px 0 12px;color:#172334}.record-table-wrap{overflow-x:auto}.portal-record table{width:100%;border-collapse:collapse;font-size:13px;min-width:540px}.portal-record th,.portal-record td{padding:10px;border:1px solid #64748b;text-align:left;vertical-align:top;overflow-wrap:anywhere}.portal-record th{background:#edf1f5;color:#172334}.portal-record th:first-child{width:50px}.portal-record a{color:#172334}.record-signatures{display:flex;gap:40px;justify-content:space-between;margin-top:64px;font-size:12px}.record-signatures>div{flex:1;text-align:center}.record-signatures span{display:block;border-top:1px solid #172334;margin-bottom:10px}.record-note{font-size:12px;margin-top:24px}
+@media(max-width:600px){.portal-record{padding:20px}.portal-record-heading{gap:12px}.portal-record-heading h1{font-size:22px}.record-brand-mark{width:45px;height:45px;flex-shrink:0}.record-biodata{grid-template-columns:1fr}.record-biodata dl>div{grid-template-columns:1fr;gap:4px}.record-passport{grid-row:1}.record-actions .button,.record-actions .button-outline,.record-shortcuts .button{width:100%}}
+@media print{@page{size:A4;margin:14mm}.workspace-header,.site-header,.site-footer,.record-actions{display:none!important}html,body{background:white!important;color:black!important}.course-record{max-width:none;width:100%;margin:0;padding:0}.portal-record{padding:0;border:0;border-radius:0;box-shadow:none;color:black}.record-biodata{grid-template-columns:1fr 100px}.record-biodata dl>div{grid-template-columns:125px 1fr}.record-passport{grid-row:auto;width:100px;height:125px}.portal-record-heading h1{font-size:22pt}.portal-record-heading h2{font-size:14pt}.record-biodata,.portal-record p,.portal-record table{font-size:10pt}.record-table-wrap{overflow:visible}.portal-record table{min-width:0;table-layout:fixed}.portal-record thead{display:table-header-group}.portal-record tr,.record-biodata,.record-signatures{break-inside:avoid}.portal-record a{color:black;text-decoration:none}.record-signatures{margin-top:45px}.portal-record th{background:#edf1f5!important;print-color-adjust:exact}}

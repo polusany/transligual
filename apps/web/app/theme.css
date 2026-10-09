@@ -86,3 +86,8 @@ input:read-only{color:var(--muted)}
 
 .account-menu{position:relative}.account-menu summary{cursor:pointer;list-style:none;min-width:44px;min-height:44px;display:grid;place-items:center;font-size:24px}.account-menu summary::-webkit-details-marker{display:none}.account-menu .nav-signout{position:absolute;right:0;top:100%;width:150px;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:10px;z-index:30}.passport-preview{display:block;width:120px;height:150px;object-fit:cover;border:1px solid var(--line);border-radius:8px;margin-top:8px}
 @media(max-width:900px){.account-menu summary{display:none}.account-menu .nav-signout{display:block!important;position:static;width:100%;text-align:left;padding:12px}.account-menu{display:block}}
+
+.site-actions .nav-signout{position:static;border:0;background:transparent;color:var(--ink-soft);font-weight:700;padding:8px;min-height:44px}.record-shortcuts{display:flex;gap:12px;flex-wrap:wrap;margin-top:18px}.record-shortcuts .button{min-height:56px;padding:16px 24px}
+@media(max-width:900px){.site-actions .nav-signout{text-align:left;border-top:1px solid var(--line);padding:12px 8px;width:100%}}
+
+.workspace-header-inner nav a.button,.site-nav a.button{color:#101a2c}.workspace-header-inner nav a.button-outline{color:var(--ink)}

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Req, UseGuards, UseInterceptors, UploadedFile } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Req, Res, UseGuards, UseInterceptors, UploadedFile } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { LearnerRegistrationDto } from './learner-registration.dto';
 import { UserRole } from '@prisma/client';
@@ -21,6 +21,15 @@ export class EnrollmentsController {
   @Post('learner-registration/me')
   saveRegistration(@Req() request: AuthenticatedRequest, @Body() input: LearnerRegistrationDto) {
     return this.enrollments.saveRegistration(request.user.sub, input);
+  }
+
+  @Get('learner-registration/passport')
+  async passport(@Req() request: AuthenticatedRequest, @Res() response: { setHeader(name: string, value: string): void; end(body: Buffer): void }) {
+    const photo = await this.enrollments.readPassport(request.user.sub);
+    response.setHeader('Content-Type', photo.mimeType);
+    response.setHeader('Cache-Control', 'private, no-store');
+    response.setHeader('X-Content-Type-Options', 'nosniff');
+    response.end(photo.content);
   }
 
   @Post('learner-registration/passport')

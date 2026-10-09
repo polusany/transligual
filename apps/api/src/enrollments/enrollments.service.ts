@@ -1,6 +1,6 @@
 import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
-import { mkdir, writeFile, unlink } from 'node:fs/promises';
+import { mkdir, writeFile, unlink, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { CourseStatus, EnrollmentStatus, FileStatus, FileVisibility } from '@prisma/client';
 import { PrismaService } from '../prisma.service';
@@ -18,6 +18,14 @@ export class EnrollmentsService {
       this.prisma.profile.findUnique({ where: { userId }, select: { avatarFileId: true } }),
     ]);
     return registration ? { ...registration, hasPassport: Boolean(profile?.avatarFileId) } : null;
+  }
+  async readPassport(userId: string) {
+    const profile = await this.prisma.profile.findUnique({ where: { userId }, include: { avatarFile: true } });
+    const file = profile?.avatarFile;
+    if (!file || file.ownerUserId !== userId || file.status !== FileStatus.READY || !/^passports\/[a-f0-9-]+\.(png|jpg)$/.test(file.objectKey)) throw new NotFoundException('No passport photo uploaded.');
+    const root = process.env.UPLOAD_DIR || join(process.cwd(), 'uploads');
+    const content = await readFile(join(root, file.objectKey)).catch(() => { throw new NotFoundException('Passport photo unavailable.'); });
+    return { content, mimeType: file.mimeType };
   }
   async savePassport(userId: string, file?: { buffer: Buffer; mimetype: string; size: number }) {
     if (!file || !file.size || file.size > 5 * 1024 * 1024) throw new BadRequestException('Choose a passport photo up to 5 MB.');
@@ -39,7 +47,7 @@ export class EnrollmentsService {
   }
   async courseRecord(userId: string) {
     const [learner, courses, certificates, payments] = await Promise.all([
-      this.prisma.user.findUnique({ where: { id: userId }, select: { email: true, profile: { select: { firstName: true, lastName: true, displayName: true } }, learnerRegistration: true } }),
+      this.prisma.user.findUnique({ where: { id: userId }, select: { id: true, email: true, profile: { select: { firstName: true, lastName: true, displayName: true } }, learnerRegistration: true } }),
       this.prisma.enrollment.findMany({ where: { studentId: userId }, orderBy: { enrolledAt: 'asc' }, select: { id: true, status: true, enrolledAt: true, completedAt: true, course: { select: { id: true, title: true, certificateEnabled: true } } } }),
       this.prisma.certificate.findMany({ where: { studentId: userId }, select: { courseId: true, certificateNumber: true, verificationCode: true, issuedAt: true, status: true } }),
       this.prisma.payment.findMany({ where: { userId, items: { some: { itemType: { in: ['COURSE', 'CERTIFICATION'] } } } }, orderBy: { createdAt: 'desc' }, select: { id: true, providerReference: true, amountMinor: true, currency: true, status: true, paidAt: true, createdAt: true, items: { select: { description: true, itemType: true, referenceId: true, amountMinor: true } } } }),

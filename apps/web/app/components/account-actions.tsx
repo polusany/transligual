@@ -30,5 +30,5 @@ export default function AccountActions() {
     window.location.assign('/');
   }
 
-  return <div className="site-actions site-actions-signed"><span className="account-greeting">Hi, {name}</span>{isTutor && !isAdmin && <Link className="nav-login" href="/dashboard">My course</Link>}<Link className="button button-small" href={href}>{label} <span aria-hidden="true">→</span></Link><details className="account-menu"><summary aria-label="Account menu">☰</summary><button className="nav-signout" onClick={signOut}>Sign out</button></details></div>;
+  return <div className="site-actions site-actions-signed"><span className="account-greeting">Hi, {name}</span>{isTutor && !isAdmin && <Link className="nav-login" href="/dashboard">My course</Link>}<Link className="button button-small" href={href}>{label} <span aria-hidden="true">→</span></Link><button className="nav-signout" onClick={signOut}>Sign out</button></div>;
 }
