@@ -1,15 +1,16 @@
-import { BadRequestException, ConflictException, GoneException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import { RateLimitService } from '../common/rate-limit.service';
 import { CreateTranslationDto, ReplyTranslationDto } from './dto/create-translation.dto';
+import { translateWithGoogle } from './translation-provider';
 import { TranslateTextDto } from './dto/translate-text.dto';
 
 @Injectable()
 export class TranslationsService {
   constructor(private readonly prisma: PrismaService, private readonly limits: RateLimitService) {}
 
-  translateText(_input: TranslateTextDto) {
-    throw new GoneException('Instant translation has been replaced. Submit a text request at /services/translation for an administrator to reply.');
+  translateText(input: TranslateTextDto) {
+    return translateWithGoogle(input);
   }
 
   async createRequest(customerId: string, input: CreateTranslationDto) {

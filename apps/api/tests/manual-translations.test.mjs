@@ -14,6 +14,7 @@ class ServiceError extends Error {}
 const output = {};
 vm.runInNewContext(compiled, { exports: output, require: name => {
   if (name === '@nestjs/common') return { Injectable: () => target => target, BadRequestException: ServiceError, ConflictException: ServiceError, GoneException: ServiceError, NotFoundException: ServiceError };
+  if (name === './translation-provider') return { translateWithGoogle: async input => ({ translatedText: 'Bonjour', targetLanguage: input.targetLanguage }) };
   throw new Error(`Unexpected runtime dependency: ${name}`);
 }, Date });
 const Service = output.TranslationsService;
@@ -68,6 +69,6 @@ test('missing requests return not found', async () => {
   const { service } = replyService({ request: null });
   await assert.rejects(() => service.reply('r1', 'admin-1', { translatedText: 'Bonjour' }), /not found/);
 });
-test('old instant endpoint never calls an external translation provider', () => {
-  assert.throws(() => new Service({}, {}).translateText({ text: 'Hello' }), /replaced/);
+test('instant endpoint delegates to the automatic provider', async () => {
+  assert.equal((await new Service({}, {}).translateText({ text: 'Hello', targetLanguage: 'fr' })).translatedText, 'Bonjour');
 });

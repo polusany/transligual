@@ -55,7 +55,7 @@ export default async function Home() {
         <section className="section-block" style={{paddingTop:0}}>
           <div className="section-heading"><div><p className="eyebrow">More than language lessons</p><h2>One trusted place for language learning and services.</h2></div><p>Whether you are learning French or working across languages, we make every conversation clearer.</p></div>
           <div className="service-grid">
-            <article className="service-card"><span className="service-index">01 / TEXT TRANSLATION</span><h3>Your words, understood everywhere.</h3><p>Request a text translation and receive a reviewed reply in your account.</p><Link className="text-link" href="/services/translation">Open the translator <span aria-hidden="true">→</span></Link><div className="service-orb"/></article>
+            <article className="service-card"><span className="service-index">01 / TEXT TRANSLATION</span><h3>Your words, understood everywhere.</h3><p>Choose your languages and get an automatic text translation.</p><Link className="text-link" href="/services/translation">Open the translator <span aria-hidden="true">→</span></Link><div className="service-orb"/></article>
             <article className="service-card"><span className="service-index">02 / INTERPRETATION</span><h3>Make every conversation count.</h3><p>Plan a language-supported meeting, appointment, or event with confidence.</p><Link className="text-link" href="/services/interpretation">Explore interpretation <span aria-hidden="true">→</span></Link><div className="service-orb"/></article>
           </div>
         </section>

@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Translator from './translator';
 
-export const metadata: Metadata = { title: 'Text translation requests' };
+export const metadata: Metadata = { title: 'Instant translation' };
 export default function TranslationPage() {
-  return <main className="page-shell"><header className="page-intro"><p className="eyebrow">Admin-assisted translation</p><h1>Find the words in another language.</h1><p>Submit your text and the languages you need. An administrator will review your request and reply in your account.</p></header><Translator /></main>;
+  return <main className="page-shell"><header className="page-intro"><p className="eyebrow">Instant translation</p><h1>Find the words in another language.</h1><p>Translate text automatically between French, English, and other languages. Choose a language or let the bot detect it for you.</p></header><Translator /></main>;
 }
