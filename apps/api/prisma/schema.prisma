@@ -264,6 +264,10 @@ model User {
   notifications          Notification[]
   sentMessages           Message[]                 @relation("MessageSender")
   auditLogs              AuditLog[]                @relation("AuditActor")
+  tutorResignations      TutorResignation[]         @relation("ResigningTutor")
+  reviewedResignations   TutorResignation[]         @relation("ResignationReviewer")
+  supportThreads        SupportThread[]
+  supportMessages       SupportMessage[]
 
   @@index([status])
 }
@@ -897,4 +901,43 @@ model RateLimitBucket {
  count Int
  resetAt DateTime
  @@index([resetAt])
+}
+
+model TutorResignation {
+ id String @id @default(uuid())
+ tutorId String
+ lastTeachingDate DateTime @db.Date
+ letter String
+ signedName String
+ status String @default("PENDING")
+ reviewNotes String?
+ reviewedById String?
+ reviewedAt DateTime?
+ createdAt DateTime @default(now())
+ tutor User @relation("ResigningTutor", fields: [tutorId], references: [id], onDelete: Restrict)
+ reviewedBy User? @relation("ResignationReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+ @@index([tutorId, createdAt])
+ @@index([status, createdAt])
+}
+model SupportThread {
+ id String @id @default(uuid())
+ ownerId String @unique
+ createdAt DateTime @default(now())
+ updatedAt DateTime @default(now()) @updatedAt
+ lastReadByAdminAt DateTime?
+ lastReadByUserAt DateTime?
+ owner User @relation(fields: [ownerId], references: [id], onDelete: Restrict)
+ messages SupportMessage[]
+ @@index([updatedAt])
+}
+model SupportMessage {
+ id String @id @default(uuid())
+ threadId String
+ senderId String
+ body String
+ fromSupport Boolean @default(false)
+ createdAt DateTime @default(now())
+ thread SupportThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+ sender User @relation(fields: [senderId], references: [id], onDelete: Restrict)
+ @@index([threadId, createdAt])
 }

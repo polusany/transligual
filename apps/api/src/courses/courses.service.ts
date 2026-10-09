@@ -94,6 +94,7 @@ export class CoursesService {
     const course = await this.prisma.course.findUnique({ where: { id: courseId }, select: { id: true, tutorId: true, status: true } });
     if (!course) throw new NotFoundException('Course not found.');
     const isAdmin = roles.includes('ADMIN') || roles.includes('SUPER_ADMIN');
+    if (!isAdmin && !roles.includes('TUTOR')) throw new ForbiddenException('Tutor access is required.');
     if (!isAdmin && course.tutorId !== userId) throw new ForbiddenException('You can only edit your own courses.');
     if (course.status === CourseStatus.PUBLISHED || course.status === CourseStatus.ARCHIVED) throw new BadRequestException('Published or archived courses cannot be edited in this studio.');
     return course;
@@ -180,6 +181,7 @@ export class CoursesService {
     if (!file || !material) throw new NotFoundException('Course file not found.');
     const course = material.lesson.module.course;
     const isAdmin = roles.includes('ADMIN') || roles.includes('SUPER_ADMIN');
+    if (!isAdmin && !roles.includes('TUTOR')) throw new ForbiddenException('Tutor access is required.');
     if (!isAdmin && course.tutorId !== userId) {
       await requireRegistration(this.prisma, userId);
       const enrollment = await this.prisma.enrollment.findFirst({ where: { studentId: userId, courseId: course.id, status: { in: ['ACTIVE', 'COMPLETED'] } }, select: { id: true } });
@@ -194,6 +196,7 @@ export class CoursesService {
     const course = await this.prisma.course.findUnique({ where: { id: courseId }, select: { id: true, tutorId: true, status: true } });
     if (!course) throw new NotFoundException('Course not found.');
     const isAdmin = roles.includes('ADMIN') || roles.includes('SUPER_ADMIN');
+    if (!isAdmin && !roles.includes('TUTOR')) throw new ForbiddenException('Tutor access is required.');
     if (!isAdmin && course.tutorId !== tutorId) throw new ForbiddenException('You can only submit your own courses.');
     if (course.status !== CourseStatus.DRAFT) throw new BadRequestException('This course cannot be submitted in its current state.');
     if (!isAdmin) {

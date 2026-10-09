@@ -104,3 +104,7 @@ For the API Docker service, set **Docker Command** to `node apps/api/scripts/sta
 ## Enable the translation bot
 
 Set `GOOGLE_TRANSLATE_API_KEY` in the backend environment after enabling Cloud Translation Basic v2 in a billing-enabled Google Cloud project. Restart or redeploy the API. The key is never sent to the browser. Without it the UI reports temporary unavailability; it never returns a simulated translation. Automatic input and output are not saved in the Translingual database. Existing manually submitted requests remain intact. Validate English → French, automatic source detection, language swapping, copy, timeout, missing-key, and quota-failure states before publishing.
+
+## Tutor resignations and support chat
+
+Apply the `20261009190000_tutor_resignations_support_chat` migration with `pnpm --filter @transligual/api prisma:deploy` before starting this release. Generate the Prisma client and deploy API and web together. Tutors submit at `/instructor/resignation`; admins review at `/admin/resignations`. Approval ends tutor permissions immediately, records the requested date, and retains the account and courses. Declines require an admin response and allow a new submission. The private site chatbox requires sign-in; admins reply at `/admin/support`. Chat automatically refreshes while open, shows the latest 100 messages, and retains messages in the database. No external chat provider or key is required.

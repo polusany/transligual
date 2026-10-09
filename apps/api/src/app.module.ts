@@ -1,4 +1,5 @@
 import { AssessmentsModule } from './assessments/assessments.module';
+import { CommunicationsModule } from './communications/communications.module';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 
@@ -22,6 +23,7 @@ import { PrismaService } from './prisma.service';
     }),
 
     AuthModule,
+    CommunicationsModule,
     AssessmentsModule,
     CoursesModule,
     EnrollmentsModule,

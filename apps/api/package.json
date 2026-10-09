@@ -13,7 +13,8 @@
     "prisma:deploy": "prisma migrate deploy",
     "prisma:seed": "prisma db seed",
     "test:translations": "node --test tests/manual-translations.test.mjs",
-    "test:translation-bot": "node --test tests/instant-translation.test.mjs tests/manual-translations.test.mjs"
+    "test:translation-bot": "node --test tests/instant-translation.test.mjs tests/manual-translations.test.mjs",
+    "test:communications": "node --test tests/communications.test.mjs"
   },
   "prisma": {
     "seed": "ts-node prisma/seed.ts"
