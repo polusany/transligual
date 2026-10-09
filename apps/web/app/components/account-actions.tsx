@@ -26,9 +26,9 @@ export default function AccountActions() {
   const name = user.profile?.displayName || user.profile?.firstName || label;
 
   async function signOut() {
-    await apiRequest('/auth/logout', { method: 'POST' }).catch(() => undefined);
+    try { await apiRequest('/auth/logout', { method: 'POST' }); } catch { window.alert('Could not sign out. Please try again.'); return; }
     window.location.assign('/');
   }
 
-  return <div className="site-actions site-actions-signed"><span className="account-greeting">Hi, {name}</span>{isTutor && !isAdmin && <Link className="nav-login" href="/dashboard">My course</Link>}<Link className="button button-small" href={href}>{label} <span aria-hidden="true">→</span></Link><button className="nav-signout" onClick={signOut}>Sign out</button></div>;
+  return <div className="site-actions site-actions-signed"><span className="account-greeting">Hi, {name}</span>{isTutor && !isAdmin && <Link className="nav-login" href="/dashboard">My course</Link>}<Link className="button button-small" href={href}>{label} <span aria-hidden="true">→</span></Link><details className="account-menu"><summary aria-label="Account menu">☰</summary><button className="nav-signout" onClick={signOut}>Sign out</button></details></div>;
 }

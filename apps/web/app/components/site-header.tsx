@@ -28,9 +28,6 @@ export default function SiteHeader() {
             <div className="courses-menu-links" onClick={(event) => { if ((event.target as HTMLElement).closest('a')) { event.currentTarget.closest('details')?.removeAttribute('open'); setOpen(false); } }}>
               <Link href="/courses">All courses and services</Link>
               <Link href="/courses#proficiency">Proficiency Courses in French</Link>
-              <Link href="/registration?program=beginner">3-month Beginner French</Link>
-              <Link href="/registration?program=intermediate">3-month Intermediate French</Link>
-              <Link href="/registration?program=advanced">3-month Advanced French</Link>
               <Link href="/registration">Registration Form</Link>
               <Link href="/specialized-tutoring">Specialized Tutoring</Link>
               <Link href="/research-assistance">Research Assistance</Link>
@@ -40,8 +37,8 @@ export default function SiteHeader() {
           <Link onClick={() => setOpen(false)} href="/services/interpretation">Interpretation</Link>
           <Link onClick={() => setOpen(false)} href="/about">Our approach</Link>
           <Link onClick={() => setOpen(false)} href="/teach/apply">Apply as a Tutor</Link>
+          <AccountActions />
         </nav>
-        <AccountActions />
       </div>
     </header>
   );

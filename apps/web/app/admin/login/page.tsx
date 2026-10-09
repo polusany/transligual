@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import PasswordField from '../../components/password-field';
 import { FormEvent, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { apiRequest, CurrentUser } from '../../lib/api';
@@ -30,5 +31,5 @@ export default function AdminLoginPage() {
     finally { setBusy(false); }
   }
 
-  return <main className="admin-login-shell"><section className="admin-login-card"><Link href="/" className="admin-login-brand"><span className="admin-brand-mark">T</span><span>Translingual<small>ADMIN ACCESS</small></span></Link><p className="eyebrow">Platform operations</p><h1>Administrator sign in</h1><p>Use an administrator account to manage the learning platform.</p><form onSubmit={submit}><label>Email address<input name="email" type="email" autoComplete="username" required /></label><label>Password<input name="password" type="password" autoComplete="current-password" required /></label>{error && <p className="form-error" role="alert">{error}</p>}{notice && <p className="form-success" role="status">{notice}</p>}<button className="button" disabled={busy}>{busy ? 'Checking access…' : 'Sign in to admin'} <span aria-hidden="true">→</span></button></form><p className="hint"><Link className="text-link" href="/reset-password">Forgot password?</Link> · <Link className="text-link" href="/">Return to public site</Link></p></section></main>;
+  return <main className="admin-login-shell"><section className="admin-login-card"><Link href="/" className="admin-login-brand"><span className="admin-brand-mark">T</span><span>Translingual<small>ADMIN ACCESS</small></span></Link><p className="eyebrow">Platform operations</p><h1>Administrator sign in</h1><p>Use an administrator account to manage the learning platform.</p><form onSubmit={submit}><label>Email address<input name="email" type="email" autoComplete="username" required /></label><PasswordField />{error && <p className="form-error" role="alert">{error}</p>}{notice && <p className="form-success" role="status">{notice}</p>}<button className="button" disabled={busy}>{busy ? 'Checking access…' : 'Sign in to admin'} <span aria-hidden="true">→</span></button></form><p className="hint"><Link className="text-link" href="/reset-password">Forgot password?</Link> · <Link className="text-link" href="/">Return to public site</Link></p></section></main>;
 }

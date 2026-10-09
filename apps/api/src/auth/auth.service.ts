@@ -7,7 +7,7 @@ import { PrismaService } from '../prisma.service';
 import { LoginDto, RegisterDto } from './dto/auth.dto';
 import { AuthEmailService } from './email.service';
 
-const VERIFY_TTL_MS = 24 * 60 * 60 * 1000;
+const VERIFY_TTL_MS = 10 * 60 * 1000;
 const RESET_TTL_MS = 30 * 60 * 1000;
 const GENERIC_EMAIL_RESPONSE = 'If the account is eligible, an email with next steps will arrive shortly.';
 
@@ -36,7 +36,7 @@ export class AuthService {
       });
       const token = await this.createAccountToken(user.id, AccountTokenType.EMAIL_VERIFICATION);
       await this.email.sendAccountLink(email, 'verify', token);
-      return { message: 'Check your email. Click the link to verify your account and sign in automatically.' };
+      return { message: 'Check your email. Your verification link expires in 10 minutes. Click it to verify your account and sign in automatically.' };
     } catch (error: unknown) {
       if (this.isUniqueConstraint(error)) throw new ConflictException('An account with this email already exists.');
       throw error;
@@ -56,7 +56,7 @@ export class AuthService {
     if (!user.emailVerifiedAt) {
       const token = await this.createAccountToken(user.id, AccountTokenType.EMAIL_VERIFICATION);
       await this.email.sendAccountLink(user.email, 'verify', token);
-      return { verificationRequired: true as const, message: 'Check your email. Click the link to verify your account and sign in automatically.' };
+      return { verificationRequired: true as const, message: 'Check your email. Your verification link expires in 10 minutes. Click it to verify your account and sign in automatically.' };
     }
     if (user.status !== UserStatus.ACTIVE) {
       throw new UnauthorizedException('This account cannot sign in.');
@@ -134,7 +134,7 @@ export class AuthService {
   private async findValidToken(token: string, type: AccountTokenType) {
     const tokenHash = this.hashToken(token);
     const accountToken = await this.prisma.accountToken.findUnique({ where: { tokenHash } });
-    if (!accountToken || accountToken.type !== type || accountToken.usedAt || accountToken.expiresAt <= new Date()) {
+    if (!accountToken || accountToken.type !== type || accountToken.usedAt || accountToken.expiresAt <= new Date() || (type === AccountTokenType.EMAIL_VERIFICATION && accountToken.createdAt && Date.now() - accountToken.createdAt.getTime() >= VERIFY_TTL_MS)) {
       throw new BadRequestException('This link is invalid or has expired. Request a new one and try again.');
     }
     return accountToken;

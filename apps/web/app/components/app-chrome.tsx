@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { Brand, default as SiteHeader } from './site-header';
 import SiteFooter from './site-footer';
@@ -9,12 +10,13 @@ import AccountActions from './account-actions';
 
 function WorkspaceHeader({ kind }: { kind: 'learner' | 'tutor' }) {
   const isLearner = kind === 'learner';
+  const [open, setOpen] = useState(false);
   return <header className={`workspace-header ${isLearner ? 'learner-header' : 'tutor-header'}`}>
     <div className="workspace-header-inner"><Brand />
-      <nav aria-label={isLearner ? 'Learner workspace' : 'Tutor workspace'}>
+      <button className="menu-toggle" aria-label={open ? "Close menu" : "Open menu"} aria-expanded={open} aria-controls="workspace-navigation" onClick={() => setOpen(!open)}>☰</button>
+      <nav id="workspace-navigation" className={open ? "is-open" : ""} onClick={event => { if ((event.target as HTMLElement).closest("a")) setOpen(false); }} aria-label={isLearner ? 'Learner workspace' : 'Tutor workspace'}>
         {isLearner ? <><Link href="/dashboard">My course</Link><Link href="/courses">Browse courses</Link><Link href="/certificates">Certificates</Link><Link href="/course-record">Course record</Link></> : <><Link href="/instructor/courses">Course studio</Link><Link href="/instructor/courses/new">Create a course</Link><Link href="/teach/apply">Tutor profile</Link></>}
-      </nav>
-      <div className="workspace-header-actions"><AccountActions /><Link className="button button-small" href="/">Public site <span aria-hidden="true">↗</span></Link></div>
+      <div className="workspace-header-actions"><AccountActions /><Link className="button button-small" href="/">Public site <span aria-hidden="true">↗</span></Link></div></nav>
     </div>
   </header>;
 }

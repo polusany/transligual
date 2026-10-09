@@ -1,4 +1,5 @@
-import { Body, Controller, Get, Param, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Req, UseGuards, UseInterceptors, UploadedFile } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { LearnerRegistrationDto } from './learner-registration.dto';
 import { UserRole } from '@prisma/client';
 import { AuthenticatedRequest, JwtAuthGuard } from '../auth/jwt-auth.guard';
@@ -20,6 +21,12 @@ export class EnrollmentsController {
   @Post('learner-registration/me')
   saveRegistration(@Req() request: AuthenticatedRequest, @Body() input: LearnerRegistrationDto) {
     return this.enrollments.saveRegistration(request.user.sub, input);
+  }
+
+  @Post('learner-registration/passport')
+  @UseInterceptors(FileInterceptor('file', { limits: { fileSize: 5 * 1024 * 1024, files: 1 } }))
+  uploadPassport(@Req() request: AuthenticatedRequest, @UploadedFile() file?: { buffer: Buffer; mimetype: string; size: number }) {
+    return this.enrollments.savePassport(request.user.sub, file);
   }
 
   @Get('course-record/me')

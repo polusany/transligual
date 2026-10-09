@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import PasswordField from '../components/password-field';
 import { FormEvent, useEffect, useState } from 'react';
 import { apiRequest } from '../lib/api';
 
@@ -33,5 +34,5 @@ export default function ResetPasswordPage() {
     finally { setBusy(false); }
   }
 
-  return <main className="page-shell"><div className="form-page"><aside className="form-aside"><p className="eyebrow">Account recovery</p><h1>Get back to learning.</h1><p>We’ll email a short-lived secure link so you can set a new password.</p></aside><section className="form-card"><p className="eyebrow">Password reset</p><h2>{token ? 'Choose a new password' : 'Request a reset link'}</h2><form onSubmit={submit}>{token ? <><label>New password<input name="password" type="password" autoComplete="new-password" minLength={12} maxLength={128} required /><small>Use at least 12 characters.</small></label><label>Confirm new password<input name="confirmPassword" type="password" autoComplete="new-password" minLength={12} maxLength={128} required /></label></> : <label>Email address<input type="email" autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} required maxLength={254} /></label>}{error && <p className="form-error" role="alert">{error}</p>}{notice && <p className="form-success" role="status">{notice}</p>}<button className="button" disabled={busy}>{busy ? 'Please wait…' : token ? 'Change password' : 'Email me a reset link'}</button></form><p className="hint"><Link className="text-link" href="/login">Return to sign in →</Link></p></section></div></main>;
+  return <main className="page-shell"><div className="form-page"><aside className="form-aside"><p className="eyebrow">Account recovery</p><h1>Get back to learning.</h1><p>We’ll email a short-lived secure link so you can set a new password.</p></aside><section className="form-card"><p className="eyebrow">Password reset</p><h2>{token ? 'Choose a new password' : 'Request a reset link'}</h2><form onSubmit={submit}>{token ? <><PasswordField label="New password" creating /><PasswordField name="confirmPassword" label="Confirm new password" creating confirm /></> : <label>Email address<input type="email" autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} required maxLength={254} /></label>}{error && <p className="form-error" role="alert">{error}</p>}{notice && <p className="form-success" role="status">{notice}</p>}<button className="button" disabled={busy}>{busy ? 'Please wait…' : token ? 'Change password' : 'Email me a reset link'}</button></form><p className="hint"><Link className="text-link" href="/login">Return to sign in →</Link></p></section></div></main>;
 }

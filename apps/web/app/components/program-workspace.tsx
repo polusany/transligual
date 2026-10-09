@@ -34,7 +34,6 @@ export default function ProgramWorkspace({ program }: { program: string }) {
       .finally(() => setLoading(false));
   }, [program]);
 
-  async function logout() { await apiRequest('/auth/logout', { method: 'POST' }).catch(() => undefined); window.location.href = '/login'; }
   const name = user?.profile?.displayName || user?.profile?.firstName || 'Learner';
   const activeCount = courses.filter((course) => course.status === 'ACTIVE').length;
   const completeCount = courses.filter((course) => course.status === 'COMPLETED').length;
@@ -57,7 +56,7 @@ export default function ProgramWorkspace({ program }: { program: string }) {
       {bookings.length > 0 && <section className="dashboard-section"><div className="section-heading"><div><p className="eyebrow">Your bookings</p><h2>Interpretation updates</h2></div></div><div className="request-list">{bookings.map((booking) => <article className="service-dashboard-card" key={booking.id}><div><h3>{booking.service.name}</h3><p>{booking.sourceLanguage} → {booking.targetLanguage} · {new Date(booking.scheduledStartAt).toLocaleString()}</p></div><span className="pill">{booking.status.replaceAll('_',' ')}</span></article>)}</div></section>}
       {user?.roles.includes('TUTOR') && <section className="cta-band"><div><h2>Your tutor studio</h2><p>Build a course for learners who are ready to move forward.</p></div><Link className="button" href="/instructor/courses">Open course studio →</Link></section>}
       {user?.roles.some((role) => ['ADMIN','SUPER_ADMIN'].includes(role)) && <section className="cta-band"><div><h2>Administration</h2><p>Review tutor applications and courses before they reach learners.</p></div><Link className="button" href="/admin">Open review desk →</Link></section>}
-      <p className="hint" style={{marginTop:40}}><button type="button" className="text-button" onClick={logout}>Sign out</button></p>
+      
     </div>
   );
 }

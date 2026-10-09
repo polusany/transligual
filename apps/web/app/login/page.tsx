@@ -3,6 +3,7 @@
 import { FormEvent, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import PasswordField from '../components/password-field';
 import { apiRequest, CurrentUser } from '../lib/api';
 
 export default function Login() {
@@ -51,6 +52,7 @@ export default function Login() {
 
     try {
       if (registering) {
+        if (password !== form.get('confirmPassword')) throw new Error('The passwords do not match.');
         const payload = {
           email,
           password,
@@ -106,7 +108,7 @@ export default function Login() {
           <form onSubmit={submit} method="post" aria-busy={isSubmitting}>
             {registering && <div className="form-row"><label>First name<input name="firstName" type="text" autoComplete="given-name" placeholder="Your first name" required /></label><label>Last name<input name="lastName" type="text" autoComplete="family-name" placeholder="Your last name" required /></label></div>}
             <label>Email address<input name="email" type="email" autoComplete="email" placeholder="you@example.com" required /></label>
-            <label>Password<input name="password" type="password" autoComplete={registering ? 'new-password' : 'current-password'} minLength={registering ? 12 : 1} placeholder={registering ? 'At least 12 characters' : 'Your password'} required />{registering && <small>Use at least 12 characters.</small>}</label>
+            <PasswordField creating={registering} />{registering && <PasswordField name="confirmPassword" label="Confirm password" creating confirm />}
             {error && <p className="form-error" role="alert">{error}</p>}
             {notice && <p className="form-success" role="status">{notice}</p>}
             <button className="button" type="submit" disabled={isSubmitting}>{isSubmitting ? 'Please wait…' : registering ? 'Create my account' : 'Sign in'} <span aria-hidden="true">→</span></button>

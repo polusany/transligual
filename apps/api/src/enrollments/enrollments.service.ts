@@ -1,5 +1,8 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
-import { CourseStatus, EnrollmentStatus } from '@prisma/client';
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { randomUUID } from 'node:crypto';
+import { mkdir, writeFile, unlink } from 'node:fs/promises';
+import { join } from 'node:path';
+import { CourseStatus, EnrollmentStatus, FileStatus, FileVisibility } from '@prisma/client';
 import { PrismaService } from '../prisma.service';
 import { LearnerRegistrationDto } from './learner-registration.dto';
 import { assertCourseChoice, assertProgramChange } from './course-choice';
@@ -9,8 +12,30 @@ import { requireRegistration } from './require-registration';
 export class EnrollmentsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  getRegistration(userId: string) {
-    return this.prisma.learnerRegistration.findUnique({ where: { userId } });
+  async getRegistration(userId: string) {
+    const [registration, profile] = await Promise.all([
+      this.prisma.learnerRegistration.findUnique({ where: { userId } }),
+      this.prisma.profile.findUnique({ where: { userId }, select: { avatarFileId: true } }),
+    ]);
+    return registration ? { ...registration, hasPassport: Boolean(profile?.avatarFileId) } : null;
+  }
+  async savePassport(userId: string, file?: { buffer: Buffer; mimetype: string; size: number }) {
+    if (!file || !file.size || file.size > 5 * 1024 * 1024) throw new BadRequestException('Choose a passport photo up to 5 MB.');
+    const png = file.mimetype === 'image/png' && file.buffer.subarray(0, 8).equals(Buffer.from([137,80,78,71,13,10,26,10]));
+    const jpeg = file.mimetype === 'image/jpeg' && file.buffer[0] === 255 && file.buffer[1] === 216 && file.buffer[2] === 255;
+    if (!png && !jpeg) throw new BadRequestException('Choose a PNG or JPEG passport photo.');
+    const objectKey = `passports/${randomUUID()}.${png ? 'png' : 'jpg'}`;
+    const root = process.env.UPLOAD_DIR || join(process.cwd(), 'uploads');
+    const path = join(root, objectKey);
+    await mkdir(join(root, 'passports'), { recursive: true });
+    await writeFile(path, file.buffer, { flag: 'wx' });
+    try {
+      await this.prisma.$transaction(async tx => {
+        const asset = await tx.file.create({ data: { ownerUserId: userId, originalName: 'Passport photo', objectKey, mimeType: file.mimetype, sizeBytes: BigInt(file.size), status: FileStatus.READY, visibility: FileVisibility.PRIVATE } });
+        await tx.profile.update({ where: { userId }, data: { avatarFileId: asset.id } });
+      });
+    } catch (error) { await unlink(path).catch(() => undefined); throw error; }
+    return { hasPassport: true };
   }
   async courseRecord(userId: string) {
     const [learner, courses, certificates, payments] = await Promise.all([

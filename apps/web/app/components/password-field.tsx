@@ -1,0 +1,7 @@
+'use client';
+import { useId, useState } from 'react';
+export default function PasswordField({ name = 'password', label = 'Password', creating = false, confirm = false }: { name?: string; label?: string; creating?: boolean; confirm?: boolean }) {
+  const [visible, setVisible] = useState(false);
+  const id = useId();
+  return <label htmlFor={id}>{label}<span className="password-control"><input id={id} name={name} type={visible ? 'text' : 'password'} autoComplete={creating ? 'new-password' : 'current-password'} minLength={creating ? 8 : 1} maxLength={128} pattern={creating && !confirm ? '(?=.*[a-z])(?=.*[A-Z]).{8,128}' : undefined} title={creating ? 'Use at least 8 characters with an uppercase and a lowercase letter.' : undefined} required onChange={event => { const input = event.currentTarget; const form = input.form; const password = form?.elements.namedItem('password') as HTMLInputElement | null; const confirmation = form?.elements.namedItem('confirmPassword') as HTMLInputElement | null; if (confirmation) confirmation.setCustomValidity(confirmation.value && confirmation.value !== password?.value ? 'The passwords do not match.' : ''); }} /><button type="button" aria-controls={id} aria-pressed={visible} aria-label={`${visible ? 'Hide' : 'Show'} ${label.toLowerCase()}`} onClick={() => setVisible(value => !value)}>{visible ? 'Hide' : 'Show'}</button></span>{creating && !confirm && <small>At least 8 characters, including an uppercase and a lowercase letter.</small>}</label>;
+}

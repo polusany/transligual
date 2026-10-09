@@ -13,7 +13,7 @@ export class AuthEmailService {
     const isVerification = purpose === 'verify';
     const subject = isVerification ? 'Verify your Translingual email' : 'Reset your Translingual password';
     const action = isVerification ? 'Verify email and sign in' : 'Choose a new password';
-    const expiry = isVerification ? '24 hours' : '30 minutes';
+    const expiry = isVerification ? '10 minutes' : '30 minutes';
     const apiKey = this.config.get<string>('RESEND_API_KEY');
     const from = this.config.get<string>('EMAIL_FROM');
 
