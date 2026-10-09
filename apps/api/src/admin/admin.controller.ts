@@ -1,8 +1,9 @@
-import { Controller, Get, Param, Post, Req, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, Post, Query, Req, UseGuards } from '@nestjs/common';
 import { UserRole } from '@prisma/client';
 import { AuthenticatedRequest, JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { Roles } from '../auth/roles.decorator';
 import { RolesGuard } from '../auth/roles.guard';
+import { AccountsQueryDto } from './accounts-query.dto';
 import { AdminService } from './admin.service';
 
 @Controller('admin')
@@ -10,6 +11,9 @@ import { AdminService } from './admin.service';
 @Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN)
 export class AdminController {
   constructor(private readonly admin: AdminService) {}
+
+  @Get('accounts') accounts(@Query() query: AccountsQueryDto) { return this.admin.listAccounts(query); }
+  @Post('accounts/:id/remove') removeAccount(@Param('id') id: string, @Req() req: AuthenticatedRequest) { return this.admin.removeAccount(id, req.user.sub); }
 
   @Get('dashboard') dashboard() { return this.admin.dashboard(); }
   @Get('courses/review') listCourses() { return this.admin.listCoursesForReview(); }
