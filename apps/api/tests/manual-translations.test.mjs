@@ -1,4 +1,4 @@
-// Isolated service tests: database operations are mocked; no live data is changed.
+// Isolated service tests: no live records are read or changed.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
@@ -13,62 +13,34 @@ const compiled = ts.transpileModule(source, { compilerOptions: { module: ts.Modu
 class ServiceError extends Error {}
 const output = {};
 vm.runInNewContext(compiled, { exports: output, require: name => {
-  if (name === '@nestjs/common') return { Injectable: () => target => target, BadRequestException: ServiceError, ConflictException: ServiceError, GoneException: ServiceError, NotFoundException: ServiceError };
+  if (name === '@nestjs/common') return { Injectable: () => target => target, GoneException: ServiceError, NotFoundException: ServiceError };
   if (name === './translation-provider') return { translateWithGoogle: async input => ({ translatedText: 'Bonjour', targetLanguage: input.targetLanguage }) };
   throw new Error(`Unexpected runtime dependency: ${name}`);
 }, Date });
 const Service = output.TranslationsService;
 const plain = value => JSON.parse(JSON.stringify(value));
 
-test('new requests save source text and enforce an account rate limit', async () => {
-  let saved, limit;
-  const service = new Service({ translationRequest: { create: async args => { saved = args; return args.data; } } }, { consume: async (...args) => { limit = args; } });
-  await service.createRequest('student-1', { sourceLanguage: 'English', targetLanguage: 'French', sourceText: 'Hello' });
-  assert.deepEqual(limit, ['translation:requests:student-1', 20, 86400000]);
-  assert.equal(saved.data.customerId, 'student-1');
-  assert.equal(saved.data.sourceText, 'Hello');
-  assert.equal(saved.data.serviceType, 'GENERAL_DOCUMENT');
+test('retired manual submissions never create work or change historical records', async () => {
+  const service = new Service(new Proxy({}, { get() { throw new Error('Database must not be touched'); } }));
+  await assert.rejects(service.createRequest('student-1', { sourceLanguage: 'English', targetLanguage: 'French', sourceText: 'Hello' }), /retired.*instant translation/);
 });
-test('same-language requests are rejected', async () => {
-  await assert.rejects(() => new Service({}, {}).createRequest('student-1', { sourceLanguage: 'French', targetLanguage: 'french', sourceText: 'Bonjour' }), /different languages/);
-});
-test('student lookup always scopes to the authenticated customer', async () => {
+test('historical request lookup always scopes to the authenticated customer', async () => {
   let query;
-  const service = new Service({ translationRequest: { findFirst: async args => { query = args; return null; } } }, {});
+  const service = new Service({ translationRequest: { findFirst: async args => { query = args; return null; } } });
   await assert.rejects(() => service.findMine('student-1', 'another-request'), /not found/);
   assert.deepEqual(plain(query.where), { id: 'another-request', customerId: 'student-1' });
 });
-function replyService({ request = { sourceText: 'Hello' }, count = 1 } = {}) {
-  const calls = {};
-  const tx = { translationRequest: {
-    findUnique: async () => request,
-    updateMany: async args => { calls.update = args; return { count }; },
-  }, auditLog: { create: async args => { calls.audit = args; } } };
-  return { service: new Service({ $transaction: async callback => callback(tx) }, {}), calls };
-}
-test('reply atomically completes pending request and records the administrator', async () => {
-  const { service, calls } = replyService();
-  await service.reply('r1', 'admin-1', { translatedText: 'Bonjour' });
-  assert.deepEqual(plain(calls.update.where), { id: 'r1', status: 'REQUESTED' });
-  assert.equal(calls.update.data.status, 'COMPLETED');
-  assert.equal(calls.update.data.translatedText, 'Bonjour');
-  assert.equal(calls.update.data.repliedById, 'admin-1');
-  assert.equal(calls.audit.data.actorUserId, 'admin-1');
+test('historical lists remain private and sorted newest first', async () => {
+  let query;
+  const service = new Service({ translationRequest: { findMany: async args => { query = args; return []; } } });
+  await service.listMine('student-1');
+  assert.deepEqual(plain(query), { where: { customerId: 'student-1' }, orderBy: { createdAt: 'desc' } });
 });
-test('duplicate or cancelled replies are rejected without an audit success', async () => {
-  const { service, calls } = replyService({ count: 0 });
-  await assert.rejects(() => service.reply('r1', 'admin-1', { translatedText: 'Bonjour' }), /already been answered/);
-  assert.equal(calls.audit, undefined);
+test('instant endpoint still delegates to the automatic provider', async () => {
+  assert.equal((await new Service({}).translateText({ text: 'Hello', targetLanguage: 'fr' })).translatedText, 'Bonjour');
 });
-test('legacy requests without source text cannot be answered', async () => {
-  const { service, calls } = replyService({ request: { sourceText: null } });
-  await assert.rejects(() => service.reply('r1', 'admin-1', { translatedText: 'Bonjour' }), /no source text/);
-  assert.equal(calls.update, undefined);
-});
-test('missing requests return not found', async () => {
-  const { service } = replyService({ request: null });
-  await assert.rejects(() => service.reply('r1', 'admin-1', { translatedText: 'Bonjour' }), /not found/);
-});
-test('instant endpoint delegates to the automatic provider', async () => {
-  assert.equal((await new Service({}, {}).translateText({ text: 'Hello', targetLanguage: 'fr' })).translatedText, 'Bonjour');
+test('admin reply route is no longer registered and the service cannot reply', () => {
+  const module = readFileSync(new URL('../src/translations/translations.module.ts', import.meta.url), 'utf8');
+  assert.ok(!module.includes('AdminTranslationsController'));
+  assert.equal(Service.prototype.reply, undefined);
 });

@@ -10,6 +10,7 @@
     "db:generate": "pnpm --filter @transligual/api prisma:generate",
     "db:migrate": "pnpm --filter @transligual/api prisma:migrate",
     "db:seed": "pnpm --filter @transligual/api prisma:seed",
-    "doctor": "node ops/doctor.mjs"
+    "doctor": "node ops/doctor.mjs",
+    "translation:check": "node ops/check-translation.mjs"
   }
 }
