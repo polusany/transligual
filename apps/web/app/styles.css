@@ -198,7 +198,7 @@ h1,h2,h3{font-family:'DM Serif Display',Georgia,serif;font-weight:400;letter-spa
 .instant-panels { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:20px; }
 .instant-panels > div { min-width:0; }
 .instant-panels textarea { margin-top:8px; display:block; }
-.instant-panels textarea[readonly] { background:#faf9f5; }
+
 .instant-text-actions { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; min-height:44px; margin-top:8px; }
 .instant-text-actions small { color:var(--muted); }
 .instant-text-actions .text-button { border:0; padding:10px; background:transparent; color:var(--green); font:inherit; cursor:pointer; }
