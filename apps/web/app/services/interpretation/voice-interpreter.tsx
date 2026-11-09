@@ -47,8 +47,8 @@ export default function VoiceInterpreter() {
   }
   function listen() { if (!translation) return; window.speechSynthesis.cancel(); const utterance = new SpeechSynthesisUtterance(translation); utterance.lang = localeFor(targetLanguage); window.speechSynthesis.speak(utterance); }
 
-  return <section className="voice-interpreter" aria-labelledby="voice-interpreter-title">
-    <div className="voice-interpreter-heading"><div><p className="eyebrow">Instant voice interpreter</p><h2 id="voice-interpreter-title">Speak once. Be understood.</h2></div><span className="pill">Voice to text & voice</span></div>
+  return <section className="voice-interpreter" aria-labelledby="voice-translator-title">
+    <div className="voice-interpreter-heading"><div><p className="eyebrow">Instant voice translation</p><h2 id="voice-translator-title">Speak once. Be understood.</h2></div><span className="pill">Voice to text & voice</span></div>
     <p className="voice-interpreter-lede">Record your message, review its text, translate it, then listen to the result. Your recording remains in this browser.</p>
     <div className="voice-languages"><label>From<select value={sourceLanguage} onChange={(event) => { setSourceLanguage(event.target.value); setTranslation(''); }}>{languages.map(([code, name]) => <option key={code} value={code}>{name}</option>)}</select></label><span aria-hidden="true">→</span><label>To<select value={targetLanguage} onChange={(event) => { setTargetLanguage(event.target.value); setTranslation(''); }}>{languages.map(([code, name]) => <option key={code} value={code}>{name}</option>)}</select></label></div>
     <div className="voice-recorder"><button type="button" className={recording ? 'button voice-stop' : 'button voice-record'} onClick={recording ? stopRecording : startRecording}>{recording ? '■ Stop recording' : '● Start recording'}</button><p role="status" aria-live="polite">{message}</p>{audioUrl && <audio controls src={audioUrl}>Your browser cannot play this recording.</audio>}</div>
