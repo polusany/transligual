@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
+import { usePathname } from 'next/navigation';
 import AccountActions from './account-actions';
 
 export function Brand({ inverse = false }: { inverse?: boolean }) {
@@ -15,6 +16,9 @@ export function Brand({ inverse = false }: { inverse?: boolean }) {
 
 export default function SiteHeader() {
   const [open, setOpen] = useState(false);
+  const pathname = usePathname();
+  const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
+  const coursesActive = pathname === '/courses' || pathname.startsWith('/courses/') || ['/registration', '/specialized-tutoring', '/research-assistance'].includes(pathname);
   return (
     <header className="site-header">
       <div className="site-header-inner">
@@ -23,7 +27,7 @@ export default function SiteHeader() {
           <span className="sr-only">{open ? 'Close' : 'Open'} menu</span><span aria-hidden="true">☰</span>
         </button>
         <nav id="main-navigation" className={`site-nav${open ? ' is-open' : ''}`} aria-label="Main navigation">
-          <details className="courses-menu">
+          <details className={`courses-menu${coursesActive ? ' active' : ''}`}>
             <summary>Courses</summary>
             <div className="courses-menu-links" onClick={(event) => { if ((event.target as HTMLElement).closest('a')) { event.currentTarget.closest('details')?.removeAttribute('open'); setOpen(false); } }}>
               <Link href="/courses">All courses and services</Link>
@@ -33,10 +37,10 @@ export default function SiteHeader() {
               <Link href="/research-assistance">Research Assistance</Link>
             </div>
           </details>
-          <Link onClick={() => setOpen(false)} href="/services/translation">Translation</Link>
-          <Link onClick={() => setOpen(false)} href="/services/interpretation">Interpretation</Link>
-          <Link onClick={() => setOpen(false)} href="/about">Our approach</Link>
-          <Link onClick={() => setOpen(false)} href="/teach/apply">Apply as a Tutor</Link>
+          <Link onClick={() => setOpen(false)} href="/services/translation" className={isActive('/services/translation') ? 'active' : undefined} aria-current={isActive('/services/translation') ? 'page' : undefined}>Translation</Link>
+          <Link onClick={() => setOpen(false)} href="/services/interpretation" className={isActive('/services/interpretation') ? 'active' : undefined} aria-current={isActive('/services/interpretation') ? 'page' : undefined}>Interpretation</Link>
+          <Link onClick={() => setOpen(false)} href="/about" className={isActive('/about') ? 'active' : undefined} aria-current={isActive('/about') ? 'page' : undefined}>Our approach</Link>
+          <Link onClick={() => setOpen(false)} href="/teach/apply" className={isActive('/teach/apply') ? 'active' : undefined} aria-current={isActive('/teach/apply') ? 'page' : undefined}>Apply as a Tutor</Link>
           <AccountActions />
         </nav>
       </div>
